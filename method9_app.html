@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b5cab">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Method 9">
+<link rel="manifest" href="manifest.webmanifest">
+<title>EPA Method 9 Field App</title>
+<style>
+:root{--blue:#0b5cab;--dark:#17324d;--bg:#f4f7fb;--card:#fff;--line:#d8e0e8;--ok:#16803c;--bad:#b42318;--warn:#a15c00}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:#14202b}
+header{position:sticky;top:0;z-index:10;background:var(--blue);color:white;padding:12px 14px calc(12px + env(safe-area-inset-top));box-shadow:0 2px 8px #0002}
+h1{font-size:20px;margin:0 0 4px}.sub{font-size:12px;opacity:.9}
+nav{display:flex;gap:7px;overflow:auto;padding:8px 0}
+nav button{white-space:nowrap;border:0;border-radius:18px;padding:8px 12px;background:#ffffff22;color:white;font-weight:700}
+nav button.active{background:white;color:var(--blue)}
+main{max-width:1100px;margin:auto;padding:12px}
+section{display:none}.active-section{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 12px;box-shadow:0 1px 2px #0000000a}
+.card h2{font-size:17px;margin:0 0 10px;color:var(--dark)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+label{display:block;font-size:12px;font-weight:700;color:#465765}
+input,select,textarea{width:100%;margin-top:4px;border:1px solid #b9c6d3;border-radius:9px;padding:10px;font-size:16px;background:white}
+textarea{min-height:70px;resize:vertical}
+button{border:0;border-radius:10px;padding:11px 13px;font-weight:800;font-size:14px;cursor:pointer}
+.primary{background:var(--blue);color:white}.secondary{background:#e8eef5;color:#17324d}.danger{background:#fee4e2;color:#8a1c16}.ok{background:#e2f4e8;color:#12652f}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.small{font-size:12px;color:#5b6b78}
+.notice{padding:10px;border-radius:10px;background:#eef5ff;border-left:4px solid var(--blue);font-size:13px}
+.status{padding:12px;border-radius:10px;font-weight:800}.status.ok{color:var(--ok)}.status.bad{color:var(--bad)}.status.warn{color:var(--warn)}
+.reading-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.timer{font-size:28px;font-variant-numeric:tabular-nums;font-weight:900;color:var(--dark)}
+.obs-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:610px;background:white}
+th,td{border:1px solid var(--line);padding:5px;text-align:center;font-size:13px}
+th{background:#edf3f8;position:sticky;top:0;z-index:2}
+td input{margin:0;padding:7px;min-width:64px;text-align:center}
+td.time{font-weight:800;white-space:nowrap;background:#f7fafc}
+.avg{font-weight:900}.violation{background:#ffe7e5 !important;color:#9d1b13}.pass{background:#e9f7ed !important;color:#116a31}
+.summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.metric{background:#f7fafc;border:1px solid var(--line);border-radius:10px;padding:10px}.metric b{display:block;font-size:20px}
+svg{width:100%;height:260px;border:1px dashed #b9c6d3;border-radius:10px;background:white;touch-action:none}
+@media(max-width:700px){.grid,.grid3,.summary-grid{grid-template-columns:1fr}.card{padding:11px}h1{font-size:18px}}
+@media print{
+  @page{size:letter landscape;margin:.28in}
+  body{background:white;font-family:Arial,sans-serif;font-size:9px}
+  header,nav,.actions,.no-print,section:not(#report){display:none!important}
+  main{max-width:none;margin:0;padding:0}
+  section#report{display:block!important}
+  .card{box-shadow:none;border:0;padding:0;margin:0}
+  .print-report{display:block!important}
+  .print-page{page-break-after:always;min-height:7.6in}
+  .print-page:last-child{page-break-after:auto}
+  .print-title{font-size:15px;font-weight:900;text-align:center;margin-bottom:5px}
+  .print-subtitle{font-size:8px;text-align:center;margin-bottom:7px}
+  .epa-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #000}
+  .epa-cell{border:1px solid #000;padding:3px;min-height:27px}
+  .epa-label{font-size:6.5px;font-weight:900;text-transform:uppercase}
+  .epa-value{font-size:8px;min-height:10px}
+  .epa-wide{grid-column:span 2}.epa-full{grid-column:1/-1}
+  .print-table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:5px}
+  .print-table th,.print-table td{border:1px solid #000;padding:2px;text-align:center;height:17px;font-size:8px}
+  .print-table th{font-weight:900;background:#eee}
+  .print-table .mincol{width:7%}.print-table .obscol{width:10%}.print-table .commentcol{width:43%}
+  .print-table td.comment{text-align:left}
+  .print-table td.missed{font-weight:900}
+  .print-sign{display:grid;grid-template-columns:2fr 2fr 1fr 2fr 1fr;border:1px solid #000;margin-top:5px}
+  .print-sign div{border:1px solid #000;padding:4px;min-height:28px}
+  .print-sketch{border:1px solid #000;height:135px;margin-top:5px;position:relative}
+  .print-results{border:1px solid #000;margin-top:5px;padding:5px}
+  .print-results table{width:100%;border-collapse:collapse}
+  .print-results th,.print-results td{border:1px solid #000;padding:2px;font-size:8px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>EPA Method 9 — Visible Emissions Field App</h1>
+  <div class="sub">Mobile field entry • 15-second observations • rolling 6-minute averages</div>
+  <nav>
+    <button class="active" data-tab="site">EPA Form 1</button>
+    <button data-tab="readings">Readings</button>
+    <button data-tab="results">Results</button>
+    <button data-tab="report">Report</button>
+  </nav>
+</header>
+
+<main>
+<section id="site" class="active-section">
+  <div class="card">
+    <h2>EPA Visible Emission Observation Form 1 — Facility Information</h2>
+    <div class="grid">
+      <label>Company name<input id="company"></label>
+      <label>Facility name<input id="facilityName"></label>
+      <label>Street address<input id="streetAddress"></label>
+      <label>Observation date<input id="date" type="date"></label>
+      <label>Location / street<input id="location"></label>
+      <label>City<input id="city"></label>
+      <label>State<input id="state"></label>
+      <label>ZIP<input id="zip"></label>
+      <label>Process equipment<input id="process"></label>
+      <label>Process operating mode<input id="processMode"></label>
+      <label>Control equipment<input id="control"></label>
+      <label>Control operating mode<input id="controlMode"></label>
+      <label>Describe emission point<input id="emissionPoint"></label>
+      <label>Method / form year<select id="formVersion"><option>Method 9</option><option>Method 9 — 2024</option><option>Other</option></select></label>
+      <label>Applicable opacity limit (%)<input id="limit" type="number" min="0" max="100" step="1" placeholder="e.g. 20"></label>
+      <label>Applicable averaging time (minutes)<input id="avgMinutes" type="number" min="0.25" step="0.25" value="6"></label>
+      <label>Required observation duration (minutes)<input id="duration" type="number" min="6" step="0.25" value="6"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2. Emission point / observer position</h2>
+    <div class="grid3">
+      <label>Emission point height (ft)<input id="height"></label>
+      <label>Height relative to observer — start (ft)<input id="relStart"></label>
+      <label>Height relative to observer — end (ft)<input id="relEnd"></label>
+      <label>Distance to emission point — start (ft)<input id="distStart"></label>
+      <label>Distance to emission point — end (ft)<input id="distEnd"></label>
+      <label>Direction to emission point — start (°)<input id="dirStart" type="number" min="0" max="360"></label>
+      <label>Direction to emission point — end (°)<input id="dirEnd" type="number" min="0" max="360"></label>
+      <label>Vertical angle to observation point — start (°)<input id="vertStart" type="number" min="-90" max="90"></label>
+      <label>Vertical angle to observation point — end (°)<input id="vertEnd" type="number" min="-90" max="90"></label>
+      <label>Direction to observation point — start (°)<input id="obsDirStart" type="number" min="0" max="360"></label>
+      <label>Direction to observation point — end (°)<input id="obsDirEnd" type="number" min="0" max="360"></label>
+      <label>Distance & direction to observation point<input id="obsDistanceDirection"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>3. Plume / background</h2>
+    <div class="grid">
+      <label>Describe emissions — start<textarea id="emissionsStart"></textarea></label>
+      <label>Describe emissions — end<textarea id="emissionsEnd"></textarea></label>
+      <label>Emission color — start<input id="emissionColorStart"></label>
+      <label>Emission color — end<input id="emissionColorEnd"></label>
+      <label>Water droplet plume
+        <select id="droplet"><option value="">Select</option><option>Attached</option><option>Detached</option><option>None</option></select>
+      </label>
+      <label>Describe plume background — start<textarea id="plumeBackgroundStart"></textarea></label>
+      <label>Describe plume background — end<textarea id="plumeBackgroundEnd"></textarea></label>
+      <label>Background color — start<input id="backgroundColorStart"></label>
+      <label>Background color — end<input id="backgroundColorEnd"></label>
+      <label>Sky conditions — start<input id="skyStart"></label>
+      <label>Sky conditions — end<input id="skyEnd"></label>
+      <label>Wind speed — start (mph)<input id="windSpeedStart" type="number" step="1"></label>
+      <label>Wind speed — end (mph)<input id="windSpeedEnd" type="number" step="1"></label>
+      <label>Wind direction — start (°)<input id="windDirStart" type="number" min="0" max="360"></label>
+      <label>Wind direction — end (°)<input id="windDirEnd" type="number" min="0" max="360"></label>
+      <label>Ambient temperature — start (°F)<input id="ambientStart"></label>
+      <label>Ambient temperature — end (°F)<input id="ambientEnd"></label>
+      <label>Wet bulb temperature — start (°F)<input id="wetBulbStart"></label>
+      <label>Wet bulb temperature — end (°F)<input id="wetBulbEnd"></label>
+      <label>Relative humidity — start (%)<input id="rhStart" type="number" min="0" max="100"></label>
+      <label>Relative humidity — end (%)<input id="rhEnd" type="number" min="0" max="100"></label>
+      <label>Point in plume where opacity was determined<input id="opacityPoint"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>4. Method 9 angle / observation checks</h2>
+    <div class="grid3">
+      <label>Sun horizontal angle from sight line (°)<input id="sunHorizontal" type="number" min="0" max="180"></label>
+      <label>Sun vertical angle (°)<input id="sunVertical" type="number" min="0" max="90"></label>
+      <label>Observer-to-plume angle from perpendicular (°)<input id="perpDeviation" type="number" min="0" max="90"></label>
+    </div>
+    <div id="angleStatus" class="status warn" style="margin-top:9px">Enter sun/observer angles for a field-condition check.</div>
+    <div class="notice" style="margin-top:9px">
+      This check is a field aid, not a substitute for the applicable permit/SIP/NSPS requirements or qualified observer judgment.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>5. Observer / certification</h2>
+    <div class="grid">
+      <label>Observer name (print)<input id="observer"></label>
+      <label>Organization<input id="organization"></label>
+      <label>Observer signature / initials<input id="signature"></label>
+      <label>Certified by<input id="certifiedBy"></label>
+      <label>Certification date<input id="certDate" type="date"></label>
+      <label>General start time<input id="startTime" type="time"></label>
+      <label>General end time<input id="endTime" type="time"></label>
+    </div>
+    <label style="margin-top:9px">Additional information<textarea id="additional"></textarea></label>
+  </div>
+
+  <div class="card no-print">
+    <h2>Source layout sketch</h2>
+    <div class="small">Draw the source, observer, sun direction and wind direction. Use your finger on the screen.</div>
+    <svg id="sketch" viewBox="0 0 600 260">
+      <rect x="0" y="0" width="600" height="260" fill="white"/>
+      <text x="20" y="25" font-size="16" font-weight="700">Source Layout Sketch</text>
+      <text x="430" y="25" font-size="12">N ↑</text>
+      <line x1="80" y1="180" x2="500" y2="180" stroke="#999" stroke-dasharray="6 5"/>
+      <text x="240" y="200" font-size="12">Sun location line</text>
+      <circle cx="120" cy="155" r="8" fill="black"/><text x="95" y="145" font-size="12">Observer</text>
+      <rect x="450" y="100" width="18" height="80" fill="none" stroke="black" stroke-width="3"/>
+      <text x="420" y="95" font-size="12">Emission point</text>
+      <circle cx="330" cy="50" r="13" fill="none" stroke="#333" stroke-width="2"/>
+      <text x="350" y="55" font-size="12">Sun</text>
+      <line x1="160" y1="155" x2="450" y2="140" stroke="#333" stroke-width="2"/>
+      <text x="270" y="135" font-size="12">Plume / sight line</text>
+    </svg>
+    <div class="actions" style="margin-top:8px"><button class="secondary" onclick="clearSketch()">Clear drawing</button></div>
+  </div>
+</section>
+
+<section id="readings">
+  <div class="card">
+    <h2>6. 1-Hour Method 9 Field Recorder</h2>
+    <div class="card" style="background:#f7fbff;border:2px solid #0b5cab;text-align:center">
+      <div class="small">TEST STATUS</div>
+      <div id="testStatus" style="font-size:24px;font-weight:900;color:#17324d">READY</div>
+      <div class="summary-grid" style="margin-top:10px">
+        <div class="metric">Reading<b id="fieldReading">1 / 240</b></div>
+        <div class="metric">Elapsed<b id="fieldElapsed">00:00:00</b></div>
+        <div class="metric">Remaining<b id="fieldRemaining">60:00</b></div>
+      </div>
+      <div style="font-size:52px;font-weight:950;margin:12px 0;color:#0b5cab" id="selectedOpacity">—%</div>
+      <div class="small">Look at the plume only at the 15-second observation point, select the opacity, then tap RECORD.</div>
+      <div class="actions" style="justify-content:center;margin-top:10px">
+        <button class="primary" id="startTestBtn" onclick="startOneHourTest()">START 1-HOUR TEST</button>
+        <button class="secondary" onclick="pauseOneHourTest()">PAUSE</button>
+        <button class="danger" onclick="finishOneHourTest()">FINISH TEST</button>
+      </div>
+      <div id="testNotice" class="notice" style="margin-top:10px">The test clock is independent of the opacity entry. A reading is recorded only when you tap RECORD.</div>
+      <div class="small" style="margin-top:6px">Automatic save: every 2 minutes and whenever a reading/field changes. <span id="saveStatus">Not saved yet</span></div>
+    </div>
+
+    <div class="reading-toolbar">
+      <div><div class="small">15-second timer</div><div class="timer" id="timer">00:00</div></div>
+      <button class="primary" onclick="startTimer()">Start timer</button>
+      <button class="secondary" onclick="stopTimer()">Stop</button>
+      <button class="secondary" onclick="add30()">Add 30 observations</button>
+      <button class="secondary" onclick="fillDemo()">Demo data</button>
+      <button class="danger" onclick="clearReadings()">Clear readings</button>
+    </div>
+    <div class="card" style="background:#f7fbff;margin-top:10px">
+      <h2 style="margin-bottom:5px">Opacity selection</h2>
+      <div class="actions" style="margin-top:9px" id="quickButtons"></div>
+      <button class="primary" style="width:100%;margin-top:9px;font-size:20px" onclick="recordQuick()">RECORD READING & NEXT</button>
+      <div class="small" style="margin-top:7px">Opacity is entered in 5% increments. The field recorder advances one observation at a time.</div>
+    </div>
+    <p class="small">Enter opacity in 5% increments (0–100). Each reading represents the momentary observation for the 15-second period. Blank cells are not included in averages.</p>
+    <div class="obs-wrap"><table id="obsTable"></table></div>
+  </div>
+</section>
+
+<section id="results">
+  <div class="card">
+    <h2>7. Method 9 data reduction &amp; 1-hour screening</h2>
+    <div class="summary-grid">
+      <div class="metric">Readings entered<b id="count">0</b></div>
+      <div class="metric">6-minute windows<b id="windows">0</b></div>
+      <div class="metric">Maximum 6-minute average<b id="maxAvg">—</b></div>
+    </div>
+    <div id="compliance" class="status warn" style="margin-top:10px">Enter at least 24 readings to calculate a Method 9 6-minute average.</div>
+    <div class="card" style="margin-top:12px;background:#fafcff">
+      <h2>Rolling averages</h2>
+      <div class="obs-wrap"><table id="avgTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>Optional path-length correction</h2>
+      <div class="grid">
+        <label>Apply correction? <select id="pathEnabled"><option value="no">No</option><option value="yes">Yes</option></select></label>
+        <label>Observed plume path length<input id="pathObserved" type="number" step="0.01"></label>
+        <label>Target plume path length<input id="pathTarget" type="number" step="0.01"></label>
+      </div>
+      <p class="small">If a path-length correction is required by the applicable rule/permit, enter the appropriate ratio. The app applies the optical-depth relationship to each individual reading before averaging. Do not use this option unless the applicable requirement calls for it.</p>
+    </div>
+  </div>
+</section>
+
+<section id="report">
+  <div class="card">
+    <h2>8. Field report</h2>
+    <p class="small">The report is generated in the EPA Visible Emission Observation Form 1 layout shown in the supplied form image. Use Print/Save PDF from Safari to create a PDF record.</p>
+    <div class="actions no-print">
+      <button class="primary" onclick="buildReport();setTimeout(()=>window.print(),100)">Print / Save PDF</button>
+      <button class="secondary" onclick="exportCSV()">Export readings CSV</button>
+      <button class="secondary" onclick="exportJSON()">Export complete JSON</button>
+      <button class="secondary" onclick="shareReport()">Share summary</button>
+    </div>
+    <div id="reportContent"></div>
+  </div>
+</section>
+</main>
+
+<script>
+const ids=[...document.querySelectorAll('input,select,textarea')].map(x=>x.id).filter(Boolean);
+let readings=Array(120).fill(null), comments=Array(30).fill(''), quickValue=null;
+let timerHandle=null, seconds=0;
+
+function $(id){return document.getElementById(id)}
+function val(id){return $(id)?.value||''}
+function save(){
+  const data={};
+  ids.forEach(id=>data[id]=val(id));
+  data.readings=readings; data.comments=comments;
+  localStorage.setItem('method9Data',JSON.stringify(data));
+}
+function updateSaveStatus(msg='Saved'){
+  const el=document.getElementById('saveStatus');
+  if(el) el.textContent=`${msg} ${new Date().toLocaleTimeString()}`;
+}
+function autoSave(){
+  try{
+    save();
+    localStorage.setItem('method9_last_autosave',JSON.stringify({
+      timestamp:Date.now(), readings, comments, testElapsedSec, testRunning, testPaused
+    }));
+    updateSaveStatus('Automatically saved');
+  }catch(e){
+    updateSaveStatus('Save error');
+  }
+}
+function restoreAutosave(){
+  try{
+    const raw=localStorage.getItem('method9_last_autosave');
+    if(!raw)return false;
+    const d=JSON.parse(raw);
+    if(!Array.isArray(d.readings))return false;
+    const age=Date.now()-(d.timestamp||0);
+    if(age>24*60*60*1000)return false;
+    if(readings.some(x=>x!=null) && !confirm('An autosaved Method 9 session was found. Restore it?'))return false;
+    readings=d.readings;
+    comments=Array.isArray(d.comments)?d.comments:comments;
+    testElapsedSec=Number(d.testElapsedSec||0);
+    updateSaveStatus('Autosave restored');
+    render();
+    updateTestClock();
+    return true;
+  }catch(e){return false}
+}
+function load(){
+  const raw=localStorage.getItem('method9Data');
+  if(!raw){ $('date').value=new Date().toISOString().slice(0,10); render(); return; }
+  try{
+    const d=JSON.parse(raw);
+    ids.forEach(id=>{if(d[id]!==undefined)$(id).value=d[id]});
+    if(Array.isArray(d.readings)) readings=d.readings; if(Array.isArray(d.comments)) comments=d.comments;
+  }catch(e){}
+  render();
+}
+ids.forEach(id=>document.addEventListener('input',e=>{if(e.target.id===id){save();updateAll()}}));
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+function showTab(t){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  document.querySelectorAll('main section').forEach(s=>s.classList.toggle('active-section',s.id===t));
+  if(t==='results') updateResults();
+  if(t==='report') {buildReport();}
+}
+function add30(){readings.push(...Array(30).fill(null));render();save()}
+function normalize(x){
+  if(x===''||x==null)return null;
+  let n=Number(x); if(!Number.isFinite(n))return null;
+  n=Math.max(0,Math.min(100,Math.round(n/5)*5)); return n;
+}
+function render(){
+  const t=$('obsTable'); let h='<thead><tr><th>MIN</th><th>0 sec</th><th>15 sec</th><th>30 sec</th><th>45 sec</th><th>Comments</th></tr></thead><tbody>';
+  const rows=Math.ceil(readings.length/4);
+  for(let r=0;r<rows;r++){
+    h+=`<tr><td class="time">${r+1}</td>`;
+    for(let c=0;c<4;c++){
+      const i=r*4+c, v=readings[i]==null?'':readings[i];
+      h+=`<td><input inputmode="numeric" type="number" min="0" max="100" step="5" value="${v}" data-i="${i}" aria-label="Observation ${i+1}"></td>`;
+    }
+    h+=`<td><input data-comment="${r}" value="${String(comments[r]||'').replace(/"/g,'&quot;')}" placeholder="Comments"></td></tr>`;
+  }
+  h+='</tbody>'; t.innerHTML=h;
+  t.querySelectorAll('input[data-i]').forEach(inp=>inp.onchange=()=>{readings[+inp.dataset.i]=normalize(inp.value);inp.value=readings[+inp.dataset.i]??'';save();updateAll()});
+  t.querySelectorAll('input[data-comment]').forEach(inp=>inp.onchange=()=>{comments[+inp.dataset.comment]=inp.value;save()});
+  updateQuickUI();
+  updateResults();
+}
+function updateAll(){updateResults();updateAngles()}
+function updateResults(){
+  const entered=readings.filter(x=>x!=null).length;
+  $('count').textContent=entered;
+
+  const requestedMinutes=Math.max(6, Number(val('duration')||60));
+  const requiredN=Math.round(requestedMinutes*4);
+  const limit=Number(val('limit'));
+
+  // Method 9 screening: evaluate every complete set of 24 consecutive observations.
+  // Sets may start at any observation; no two selected compliance sets should overlap.
+  const windows=[];
+  for(let i=0;i+24<=Math.min(requiredN,readings.length);i++){
+    const a=readings.slice(i,i+24);
+    if(a.every(x=>x!=null)){
+      const corrected=a.map(correctReading);
+      windows.push({start:i,end:i+23,avg:corrected.reduce((s,x)=>s+x,0)/24});
+    }
+  }
+
+  // If the applicable standard requires an averaging period > 24 observations,
+  // calculate the average over ALL observations in that specified period.
+  let full=null;
+  const firstRequired=readings.slice(0,requiredN);
+  if(requiredN<=readings.length && firstRequired.length===requiredN && firstRequired.every(x=>x!=null)){
+    const corrected=firstRequired.map(correctReading);
+    full=corrected.reduce((s,x)=>s+x,0)/requiredN;
+  }
+
+  $('windows').textContent=windows.length;
+  const max=windows.length?Math.max(...windows.map(x=>x.avg)):null;
+  $('maxAvg').textContent=max==null?'—':max.toFixed(2)+'%';
+
+  const c=$('compliance');
+  if(entered<requiredN){
+    c.className='status warn';
+    c.textContent=`${requestedMinutes}-minute period selected: ${requiredN} observations are required. ${requiredN-entered} remain.`;
+  }else if(!Number.isFinite(limit)){
+    c.className='status warn';
+    c.textContent=`${requestedMinutes}-minute observation period is complete. Enter the applicable opacity limit to evaluate the averages.`;
+  }else{
+    const bad=windows.filter(x=>x.avg>limit);
+    if(bad.length){
+      c.className='status bad';
+      c.textContent=`POTENTIAL EXCEEDANCE: ${bad.length} complete 6-minute screening window(s) exceed ${limit}%. Highest 6-minute average: ${max.toFixed(2)}%.`;
+    }else{
+      c.className='status ok';
+      c.textContent=`No complete 6-minute screening window exceeds ${limit}%. Highest 6-minute average: ${max==null?'—':max.toFixed(2)}%.`;
+    }
+  }
+
+  let ah='<thead><tr><th>Window</th><th>Start</th><th>End</th><th>Average</th><th>Status</th></tr></thead><tbody>';
+  windows.forEach((x,j)=>{
+    const bad=Number.isFinite(limit)&&x.avg>limit;
+    const st=(j===0?'First complete':j===windows.length-1?'Last complete':'') || 'Screening';
+    ah+=`<tr class="${bad?'violation':'pass'}"><td>${j+1}</td><td>${formatObsTime(x.start)}</td><td>${formatObsTime(x.end)}</td><td>${x.avg.toFixed(2)}%</td><td>${Number.isFinite(limit)?(bad?'EXCEEDS':'≤ LIMIT'):st}</td></tr>`;
+  });
+  ah+='</tbody>';
+  if(full!=null){
+    ah+=`<tfoot><tr><th colspan="3">Entire ${requestedMinutes}-minute specified period average</th><th>${full.toFixed(2)}%</th><th>Required-period calculation</th></tr></tfoot>`;
+  }
+  $('avgTable').innerHTML=ah;
+}
+function formatObsTime(index){
+  const total=index*15;
+  const m=Math.floor(total/60), s=total%60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function correctReading(o){
+  if(val('pathEnabled')!=='yes')return o;
+  const Lm=Number(val('pathObserved')), Lt=Number(val('pathTarget'));
+  if(!(Lm>0&&Lt>0))return o;
+  const op=o/100;
+  return (1-Math.pow(1-op,Lt/Lm))*100;
+}
+function updateAngles(){
+  const h=Number(val('sunHorizontal')), v=Number(val('sunVertical')), p=Number(val('perpDeviation'));
+  const box=$('angleStatus');
+  if(!Number.isFinite(h)&&!Number.isFinite(v)&&!Number.isFinite(p)){box.className='status warn';box.textContent='Enter sun/observer angles for a field-condition check.';return}
+  const hOK=!Number.isFinite(h)||h>=110;
+  const vOK=!Number.isFinite(v)||v<70;
+  const pOK=!Number.isFinite(p)||p<=18;
+  const ok=hOK&&vOK&&pOK;
+  box.className='status '+(ok?'ok':'bad');
+  box.textContent=(ok?'Field-angle check appears acceptable based on entered values. ':'Review field-angle conditions: ')+
+    `horizontal ${Number.isFinite(h)?h+'°':'—'}, vertical ${Number.isFinite(v)?v+'°':'—'}, perpendicular deviation ${Number.isFinite(p)?p+'°':'—'}.`;
+}
+function initQuickButtons(){
+  const q=$('quickButtons'); q.innerHTML='';
+  for(let n=0;n<=100;n+=5){
+    const b=document.createElement('button'); b.className='secondary'; b.textContent=n+'%';
+    b.onclick=()=>{quickValue=n;updateQuickUI()}; q.appendChild(b);
+  }
+}
+function updateQuickUI(){
+  const next=readings.findIndex(x=>x==null);
+  const idx=next<0?readings.length:next;
+  $('nextObs').textContent=idx+1;
+  $('nextTime').textContent=`${Math.floor(idx/4)+1}:${String((idx%4)*15).padStart(2,'0')}`;
+  $('selectedOpacity').textContent=quickValue==null?'—%':quickValue+'%';
+  document.querySelectorAll('#quickButtons button').forEach(b=>b.classList.toggle('primary',Number(b.textContent.replace('%',''))===quickValue));
+}
+function recordQuick(){
+  const idx=readings.findIndex(x=>x==null);
+  if(quickValue==null){alert('Select an opacity value first.');return}
+  if(idx<0){alert('All 240 observations are already filled.');return}
+  readings[idx]=quickValue;
+  quickValue=null;
+  updateQuickUI();
+  render();
+  save();
+  autoSave();
+
+  if(testRunning && idx===239){
+    finishOneHourTest();
+  }
+}
+function startOneHourTest(){
+  if(testRunning){return}
+  if(readings.some(x=>x!=null) && !confirm('Start a new 1-hour test and clear the current readings?')) return;
+  readings=Array(240).fill(null);
+  comments=Array(60).fill('');
+  quickValue=null;
+  testRunning=true;
+  testPaused=false;
+  testStartMs=Date.now();
+  testElapsedSec=0;
+  $('testStatus').textContent='RUNNING';
+  $('testStatus').style.color='#16803c';
+  $('testNotice').textContent='Test started. Make one momentary observation every 15 seconds. Record the value when the timer reaches each observation point.';
+  $('startTestBtn').disabled=true;
+  clearInterval(testTimer);
+  testTimer=setInterval(updateTestClock,250);
+  render();
+  save();
+  autoSave();
+  updateTestClock();
+}
+function pauseOneHourTest(){
+  if(!testRunning)return;
+  testPaused=!testPaused;
+  if(testPaused){
+    testElapsedSec=Math.floor((Date.now()-testStartMs)/1000);
+    $('testStatus').textContent='PAUSED';
+    $('testStatus').style.color='#a15c00';
+    $('testNotice').textContent='Test paused. Resume when ready; the elapsed test time is held.';
+  }else{
+    testStartMs=Date.now()-testElapsedSec*1000;
+    $('testStatus').textContent='RUNNING';
+    $('testStatus').style.color='#16803c';
+    $('testNotice').textContent='Test resumed.';
+  }
+  updateTestClock();
+}
+function finishOneHourTest(){
+  if(!testRunning && readings.filter(x=>x!=null).length===0)return;
+  testRunning=false;
+  testPaused=false;
+  clearInterval(testTimer); testTimer=null;
+  if(testStartMs && !testElapsedSec)testElapsedSec=Math.floor((Date.now()-testStartMs)/1000);
+  $('testStatus').textContent='FINISHED';
+  $('testStatus').style.color='#0b5cab';
+  $('startTestBtn').disabled=false;
+  $('testNotice').textContent=`Test finished with ${readings.filter(x=>x!=null).length} of 240 observations entered. Review Results before finalizing the record.`;
+  updateTestClock();
+  updateResults();
+  save();
+  autoSave();
+}
+function updateTestClock(){
+  const idx=Math.min(readings.filter(x=>x!=null).length,240);
+  let elapsed=testElapsedSec;
+  if(testRunning && !testPaused) elapsed=Math.floor((Date.now()-testStartMs)/1000);
+  elapsed=Math.max(0,Math.min(elapsed,3600));
+  const rem=Math.max(0,3600-elapsed);
+  $('fieldReading').textContent=`${Math.min(idx+1,240)} / 240`;
+  $('fieldElapsed').textContent=fmtHMS(elapsed);
+  $('fieldRemaining').textContent=fmtHMS(rem);
+  $('selectedOpacity').textContent=quickValue==null?'—%':quickValue+'%';
+  if(testRunning && !testPaused && elapsed>=3600){
+    finishOneHourTest();
+  }
+}
+function fmtHMS(s){
+  s=Math.max(0,Math.floor(s));
+  return `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+}
+function startTimer(){
+  stopTimer(); seconds=0; $('timer').textContent='00:00';
+  timerHandle=setInterval(()=>{seconds++;let r=seconds%15;$('timer').textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(r).padStart(2,'0')}`; if(r===0&&navigator.vibrate)navigator.vibrate(100)},1000);
+}
+function stopTimer(){if(timerHandle){clearInterval(timerHandle);timerHandle=null}}
+function clearReadings(){if(confirm('Clear all opacity readings?')){readings=Array(120).fill(null);comments=Array(30).fill('');render();save()}}
+function fillDemo(){
+  readings=readings.map((_,i)=>i<48?[5,10,10,15,15,20,20,25,20,15,10,10][i%12]:null);
+  render();save();
+}
+function clearSketch(){
+  const s=$('sketch'); const ctx=s.getContext?null:null;
+  // SVG is reset by replacing with the original drawing.
+  const parent=s.parentNode, clone=s.cloneNode(false);
+  clone.setAttribute('viewBox','0 0 600 260');
+  clone.innerHTML=`<rect x="0" y="0" width="600" height="260" fill="white"/><text x="20" y="25" font-size="16" font-weight="700">Source Layout Sketch</text><text x="430" y="25" font-size="12">N ↑</text><line x1="80" y1="180" x2="500" y2="180" stroke="#999" stroke-dasharray="6 5"/><text x="240" y="200" font-size="12">Sun location line</text><circle cx="120" cy="155" r="8" fill="black"/><text x="95" y="145" font-size="12">Observer</text><rect x="450" y="100" width="18" height="80" fill="none" stroke="black" stroke-width="3"/><text x="420" y="95" font-size="12">Emission point</text><circle cx="330" cy="50" r="13" fill="none" stroke="#333" stroke-width="2"/><text x="350" y="55" font-size="12">Sun</text><line x1="160" y1="155" x2="450" y2="140" stroke="#333" stroke-width="2"/><text x="270" y="135" font-size="12">Plume / sight line</text>`;
+  parent.replaceChild(clone,s); enableSketch();
+}
+function enableSketch(){
+  const svg=$('sketch'); let drawing=false,last=null;
+  const point=e=>{const r=svg.getBoundingClientRect();return {x:(e.clientX-r.left)*600/r.width,y:(e.clientY-r.top)*260/r.height}};
+  svg.addEventListener('pointerdown',e=>{drawing=true;last=point(e);svg.setPointerCapture(e.pointerId)});
+  svg.addEventListener('pointermove',e=>{if(!drawing)return;const p=point(e);const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',last.x);line.setAttribute('y1',last.y);line.setAttribute('x2',p.x);line.setAttribute('y2',p.y);line.setAttribute('stroke','#0b5cab');line.setAttribute('stroke-width','3');line.setAttribute('stroke-linecap','round');svg.appendChild(line);last=p});
+  svg.addEventListener('pointerup',()=>drawing=false);
+}
+function exportCSV(){
+  let csv='Observation,Minute,Second,Opacity %\n';
+  readings.forEach((v,i)=>{if(v!=null)csv+=`${i+1},${Math.floor(i/4)+1},${(i%4)*15},${v}\n`});
+  download('method9_readings.csv',csv,'text/csv');
+}
+function exportJSON(){
+  save(); download('method9_record.json',localStorage.getItem('method9Data')||'{}','application/json');
+}
+function download(name,text,type){
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+async function shareReport(){
+  const txt=`EPA Method 9 | ${val('company')} | ${val('date')} | Max ${$('maxAvg').textContent} | Limit ${val('limit')||'not entered'}%`;
+  if(navigator.share) await navigator.share({title:'EPA Method 9',text:txt}); else alert(txt);
+}
+function esc(v){return html.escape(String(v||'—')).replace(/\n/g,'<br>')}
+function observationRows(startIndex,count){
+  let h='';
+  const end=Math.min(startIndex+count,readings.length);
+  const rows=Math.ceil((end-startIndex)/4);
+  for(let r=0;r<rows;r++){
+    const minute=Math.floor((startIndex+r*4)/4)+1;
+    h+=`<tr><td class="mincol">${minute}</td>`;
+    for(let c=0;c<4;c++){
+      const i=startIndex+r*4+c;
+      const v=i<end?(readings[i]==null?'—':readings[i]):'';
+      h+=`<td class="obscol ${v==='—'?'missed':''}">${v}</td>`;
+    }
+    h+=`<td class="comment">${esc(comments[r+Math.floor(startIndex/4)]||'')}</td></tr>`;
+  }
+  return h;
+}
+function epaHeader(pageLabel){
+  return `<div class="print-title">EPA<br><span style="font-size:14px">VISIBLE EMISSION OBSERVATION FORM 1</span></div>
+  <div class="print-subtitle">Method 9 &nbsp; | &nbsp; ${pageLabel}</div>
+  <div style="display:flex;justify-content:space-between;border:1px solid #000;padding:3px;margin-bottom:4px;font-size:7px"><span>Form Number: VEOF1.1</span><span>Page: ${pageLabel.match(/page (\d+) of (\d+)/i)?.[1]||'—'} of ${pageLabel.match(/page (\d+) of (\d+)/i)?.[2]||'—'}</span></div>`;
+}
+function epaField(label,id,extra=''){
+  return `<div class="epa-cell ${extra}"><div class="epa-label">${label}</div><div class="epa-value">${esc(val(id))}</div></div>`;
+}
+function buildReport(){
+  const requiredN=Math.min(240,Math.round(Math.max(6,Number(val('duration')||60))*4));
+  const pages=Math.max(1,Math.ceil(requiredN/120)); // 30 minutes / page = 120 observations.
+  const limit=Number(val('limit'));
+
+  let windows=[];
+  for(let i=0;i+24<=requiredN;i++){
+    const a=readings.slice(i,i+24);
+    if(a.every(x=>x!=null)) windows.push({start:i,end:i+23,avg:a.map(correctReading).reduce((s,x)=>s+x,0)/24});
+  }
+  const full=requiredN<=readings.length && readings.slice(0,requiredN).every(x=>x!=null)
+    ? readings.slice(0,requiredN).map(correctReading).reduce((s,x)=>s+x,0)/requiredN:null;
+  const max=windows.length?Math.max(...windows.map(x=>x.avg)):null;
+
+  let pagesHtml='';
+  for(let pg=0;pg<pages;pg++){
+    const startIdx=pg*120;
+    pagesHtml+=`<div class="print-page">
+      ${epaHeader(`Observation record — page ${pg+1} of ${pages}`)}
+      <div class="epa-grid">
+        ${epaField('Company Name','company','epa-wide')}
+        ${epaField('Facility Name','facilityName','epa-wide')}
+        ${epaField('Street Address','streetAddress','epa-wide')}
+        ${epaField('Observation Date','date')}
+        ${epaField('Start Time','startTime')}
+        ${epaField('End Time','endTime')}
+        ${epaField('Location','location','epa-wide')}
+        ${epaField('City','city')}
+        ${epaField('State','state')}
+        ${epaField('ZIP','zip')}
+        ${epaField('Process Equipment','process','epa-wide')}
+        ${epaField('Operating Mode','processMode','epa-wide')}
+        ${epaField('Control Equipment','control','epa-wide')}
+        ${epaField('Operating Mode','controlMode','epa-wide')}
+        ${epaField('Describe Emission Point','emissionPoint','epa-wide')}
+        ${epaField('Emission Point Height (ft)','height')}
+        ${epaField('Height Relative to Observer — Start / End','relStart','')}
+        ${epaField('Height Relative to Observer — End','relEnd','')}
+        ${epaField('Distance to Emission Point — Start / End','distStart')}
+        ${epaField('Distance to Emission Point — End','distEnd')}
+        ${epaField('Direction to Emission Point — Start','dirStart')}
+        ${epaField('Direction to Emission Point — End','dirEnd')}
+        ${epaField('Vertical Angle — Start','vertStart')}
+        ${epaField('Vertical Angle — End','vertEnd')}
+        ${epaField('Direction to Observation Point — Start','obsDirStart')}
+        ${epaField('Direction to Observation Point — End','obsDirEnd')}
+        ${epaField('Distance & Direction to Observation Point','obsDistanceDirection','epa-wide')}
+        ${epaField('Describe Emissions — Start','emissionsStart','epa-wide')}
+        ${epaField('Describe Emissions — End','emissionsEnd','epa-wide')}
+        ${epaField('Emission Color — Start','emissionColorStart')}
+        ${epaField('Emission Color — End','emissionColorEnd')}
+        ${epaField('Water Droplet Plume','droplet')}
+        ${epaField('Opacity Point','opacityPoint','epa-wide')}
+        ${epaField('Plume Background — Start','plumeBackgroundStart','epa-wide')}
+        ${epaField('Plume Background — End','plumeBackgroundEnd','epa-wide')}
+        ${epaField('Background Color — Start','backgroundColorStart')}
+        ${epaField('Background Color — End','backgroundColorEnd')}
+        ${epaField('Sky — Start','skyStart')}
+        ${epaField('Sky — End','skyEnd')}
+        ${epaField('Wind Speed — Start (mph)','windSpeedStart')}
+        ${epaField('Wind Speed — End (mph)','windSpeedEnd')}
+        ${epaField('Wind Direction — Start (°)','windDirStart')}
+        ${epaField('Wind Direction — End (°)','windDirEnd')}
+        ${epaField('Ambient Temp — Start (°F)','ambientStart')}
+        ${epaField('Ambient Temp — End (°F)','ambientEnd')}
+        ${epaField('Wet Bulb — Start (°F)','wetBulbStart')}
+        ${epaField('Wet Bulb — End (°F)','wetBulbEnd')}
+        ${epaField('RH — Start (%)','rhStart')}
+        ${epaField('RH — End (%)','rhEnd')}
+      </div>
+
+      <div class="print-sketch">
+        <b style="font-size:8px">SOURCE LAYOUT SKETCH — NORTH / OBSERVER / EMISSION POINT / SUN LOCATION / WIND</b>
+        <span style="position:absolute;right:12px;top:25px;font-size:9px">N ↑</span>
+        <span style="position:absolute;left:12%;bottom:25px">● OBSERVER</span>
+        <span style="position:absolute;right:12%;bottom:45px">▥ EMISSION POINT</span>
+        <span style="position:absolute;left:48%;top:35px">☼ SUN</span>
+        <span style="position:absolute;left:37%;bottom:22px">──────── PLUME / SIGHT LINE ────────</span>
+      </div>
+
+      <table class="print-table">
+        <thead><tr><th class="mincol">MIN</th><th>SEC 0</th><th>SEC 15</th><th>SEC 30</th><th>SEC 45</th><th class="commentcol">COMMENTS</th></tr></thead>
+        <tbody>${observationRows(startIdx,120)}</tbody>
+      </table>
+
+      ${pg===pages-1?`<div class="print-sign">
+        <div><b>OBSERVER'S NAME (PRINT)</b><br>${esc(val('observer'))}</div>
+        <div><b>OBSERVER'S SIGNATURE</b><br>${esc(val('signature'))}</div>
+        <div><b>DATE</b><br>${esc(val('date'))}</div>
+        <div><b>ORGANIZATION</b><br>${esc(val('organization'))}</div>
+        <div><b>CERTIFIED BY / DATE</b><br>${esc(val('certifiedBy'))} / ${esc(val('certDate'))}</div>
+      </div>`:''}
+    </div>`;
+  }
+
+  // Results page.
+  let resultRows='';
+  windows.forEach((x,i)=>{
+    const bad=Number.isFinite(limit)&&x.avg>limit;
+    resultRows+=`<tr><td>${i+1}</td><td>${formatObsTime(x.start)}</td><td>${formatObsTime(x.end)}</td><td>${x.avg.toFixed(2)}%</td><td>${Number.isFinite(limit)?(bad?'EXCEEDS':'≤ LIMIT'):'—'}</td></tr>`;
+  });
+
+  pagesHtml+=`<div class="print-page">
+    ${epaHeader('Data reduction / results')}
+    <div class="print-results">
+      <b>OBSERVATION SUMMARY</b>
+      <p>Specified observation period: <b>${val('duration')||60} minutes</b> &nbsp; | &nbsp; Required observations: <b>${requiredN}</b> &nbsp; | &nbsp; Entered: <b>${readings.filter(x=>x!=null).length}</b></p>
+      <p>Applicable opacity limit: <b>${Number.isFinite(limit)?limit+'%':'Not entered'}</b></p>
+      <table><thead><tr><th>6-minute screening window</th><th>Start</th><th>End</th><th>Average</th><th>Status</th></tr></thead><tbody>${resultRows}</tbody></table>
+      <p><b>Highest 6-minute screening average:</b> ${max==null?'—':max.toFixed(2)+'%'}</p>
+      <p><b>Entire specified-period average:</b> ${full==null?'—':full.toFixed(2)+'%'}</p>
+      <p><b>Potential exceedance:</b> ${windows.some(x=>Number.isFinite(limit)&&x.avg>limit)?'YES — REVIEW REQUIRED':'No 6-minute screening window exceeds the entered limit'}</p>
+    </div>
+    <div class="print-results">
+      <b>ADDITIONAL INFORMATION</b><br>${esc(val('additional'))}
+    </div>
+    <div class="print-results">
+      <b>FIELD ANGLE CHECK</b><br>
+      Sun horizontal angle: ${esc(val('sunHorizontal'))}° &nbsp;
+      Sun vertical angle: ${esc(val('sunVertical'))}° &nbsp;
+      Observer-to-plume deviation: ${esc(val('perpDeviation'))}°
+    </div>
+    <div class="print-results">
+      <b>IMPORTANT RECORD NOTE</b><br>
+      This electronic report is a data-entry and calculation record. The applicable regulation, permit, observer qualification requirements, and source-specific data-reduction requirements control the final compliance determination.
+    </div>
+  </div>`;
+
+  $('reportContent').innerHTML=`<div class="print-report">${pagesHtml}</div>`;
+}
+enableSketch();
+initQuickButtons();
+load();
+setInterval(autoSave, 120000);
+window.addEventListener('beforeunload',autoSave);
+setTimeout(()=>{ if(!readings.some(x=>x!=null)) restoreAutosave(); }, 300);
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body>
+</html>
