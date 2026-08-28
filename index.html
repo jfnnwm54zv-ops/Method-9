@@ -1049,10 +1049,18 @@ function applyWeather(which){
     $(side==='start'?'rhStart':'rhEnd').value=Number.isFinite(d.rh)?Math.round(d.rh):'';
     $(side==='start'?'skyStart':'skyEnd').value=d.sky||'';
   };
-  if(which==='start'||which==='both')put('start');
-  if(which==='end'||which==='both')put('end');
-  save(); updateAll();
-  $('weatherStatus').className='status ok'; $('weatherStatus').textContent=`Weather applied to ${which==='both'?'START and END':which.toUpperCase()}. Verify the actual observation-point conditions.`;
+  const stamp=new Date().toLocaleString();
+  const snapshot={timestamp:stamp,temp:d.temp,rh:d.rh,wind:d.wind,dir:d.dir,sky:d.sky,wetBulb:d.wetBulb,lat:d.lat,lon:d.lon,timezone:d.timezone};
+  const record=(side)=>{
+    put(side);
+    weatherSnapshots[side]={...snapshot};
+    $(side==='start'?'weatherCaptureStart':'weatherCaptureEnd').value=stamp;
+    $(side==='start'?'weatherWindDirStart':'weatherWindDirEnd').value=Number.isFinite(d.dir)?`${d.dir.toFixed(1)}° true (${compassDir(d.dir)})`:'';
+  };
+  if(which==='start'||which==='both')record('start');
+  if(which==='end'||which==='both')record('end');
+  save(); updateAll(); renderSourceSketchAnnotations();
+  $('weatherStatus').className='status ok'; $('weatherStatus').textContent=`Weather applied to ${which==='both'?'START and END':which.toUpperCase()} and captured in the Source Layout Sketch. Verify the actual observation-point conditions.`;
 }
 function startTimer(){
   stopTimer(); seconds=0; $('timer').textContent='00:00';
