@@ -918,45 +918,55 @@ function renderSourceSketchAnnotations(){
 
   const startSun=sunSnapshots.start, endSun=sunSnapshots.end;
   const startWind=weatherSnapshots.start?.dir, endWind=weatherSnapshots.end?.dir;
+  const sourceBearing=Number(val('dirStart'));
 
-  // Sun position is drawn from the observer using true azimuth. START and END are both shown when available.
-  const drawSun=(snap,label,offsetY)=>{
+  // The sketch uses the observer as the reference point. True azimuths are measured clockwise from north.
+  const drawArrow=(g,x1,y1,x2,y2,stroke,width=3,dash='')=>{
+    const line=sketchSvgEl('line',{x1,y1,x2,y2,stroke,'stroke-width':width,...(dash?{'stroke-dasharray':dash}:{})});
+    g.appendChild(line);
+    const a=Math.atan2(y2-y1,x2-x1), ah=10;
+    const p1={x:x2-ah*Math.cos(a-Math.PI/6),y:y2-ah*Math.sin(a-Math.PI/6)};
+    const p2={x:x2-ah*Math.cos(a+Math.PI/6),y:y2-ah*Math.sin(a+Math.PI/6)};
+    g.appendChild(sketchSvgEl('polygon',{points:`${x2},${y2} ${p1.x},${p1.y} ${p2.x},${p2.y}`,fill:stroke}));
+  };
+  const addText=(g,x,y,text,size=10,weight=600,fill='#222')=>g.appendChild(sketchSvgEl('text',{x,y,fill,'font-size':size,'font-weight':weight},text));
+
+  // Draw the actual observer-to-source bearing when available.
+  if(Number.isFinite(sourceBearing)){
+    const pt=sketchDirPoint(sourceBearing,300,120,155);
+    drawArrow(capG,120,155,Math.min(450,pt.x),Math.max(70,Math.min(180,pt.y)),'#333',3,'');
+    addText(capG,205,112,`SOURCE BEARING ${sourceBearing.toFixed(1)}° TRUE (${compassDir(sourceBearing).split(' ')[1]||''})`,9,800);
+  }
+
+  const drawSun=(snap,label,offset)=>{
     if(!snap || !Number.isFinite(snap.azimuth))return;
-    const pt=sketchDirPoint(snap.azimuth,82,120,155);
-    const line=sketchSvgEl('line',{x1:120,y1:155,x2:pt.x,y2:pt.y,stroke:'#d18b00','stroke-width':3,'stroke-dasharray':'7 4'});
-    sunG.appendChild(line);
-    const circ=sketchSvgEl('circle',{cx:pt.x,cy:pt.y,r:9,fill:'white',stroke:'#d18b00','stroke-width':3}); sunG.appendChild(circ);
-    sunG.appendChild(sketchSvgEl('text',{x:Math.min(545,pt.x+12),y:Math.max(45,pt.y-7),fill:'#8a5b00','font-size':12,'font-weight':700},`☀ ${label}`));
-    sunG.appendChild(sketchSvgEl('text',{x:Math.min(545,pt.x+12),y:Math.max(60,pt.y+10),fill:'#8a5b00','font-size':10},`${snap.azimuth.toFixed(1)}° az / ${Number(snap.elevation).toFixed(1)}° el`));
+    const pt=sketchDirPoint(snap.azimuth,105,120,155);
+    drawArrow(sunG,120,155,pt.x,pt.y,'#c27a00',3,'8 5');
+    sunG.appendChild(sketchSvgEl('circle',{cx:pt.x,cy:pt.y,r:10,fill:'white',stroke:'#c27a00','stroke-width':3}));
+    addText(sunG,Math.min(470,pt.x+12),Math.max(48,pt.y-8),`☀ ${label}`,11,800,'#8a5b00');
+    addText(sunG,Math.min(500,pt.x+12),Math.max(62,pt.y+9),`${snap.azimuth.toFixed(1)}° az / ${Number(snap.elevation).toFixed(1)}° el`,9,600,'#8a5b00');
   };
-  drawSun(startSun,'START',0);
-  drawSun(endSun,'END',0);
+  drawSun(startSun,'START',0); drawSun(endSun,'END',0);
 
-  // Wind direction from the weather capture is a meteorological FROM direction. Arrow points downwind; label retains FROM degree.
-  const drawWind=(dir,label,yOffset)=>{
+  // Wind direction is a meteorological FROM direction; the arrow points in the direction the wind travels.
+  const drawWind=(dir,label,y)=>{
     if(!Number.isFinite(Number(dir)))return;
-    const d=Number(dir), from=sketchDirPoint(d,58,459,140), to=sketchDirPoint((d+180)%360,58,459,140);
-    const line=sketchSvgEl('line',{x1:from.x,y1:from.y,x2:to.x,y2:to.y,stroke:'#0b5cab','stroke-width':3});
-    const angle=Math.atan2(to.y-from.y,to.x-from.x), ah=9;
-    const p1={x:to.x-ah*Math.cos(angle-Math.PI/6),y:to.y-ah*Math.sin(angle-Math.PI/6)};
-    const p2={x:to.x-ah*Math.cos(angle+Math.PI/6),y:to.y-ah*Math.sin(angle+Math.PI/6)};
-    const poly=sketchSvgEl('polygon',{points:`${to.x},${to.y} ${p1.x},${p1.y} ${p2.x},${p2.y}`,fill:'#0b5cab'});
-    windG.appendChild(line); windG.appendChild(poly);
-    windG.appendChild(sketchSvgEl('text',{x:300,y:238+yOffset,fill:'#0b5cab','font-size':11,'font-weight':700},`WIND ${label}: FROM ${d.toFixed(1)}° ${compassDir(d).split(' ')[1]||''}`));
+    const d=Number(dir), a=deg2rad(d+180);
+    const x1=500-55*Math.sin(a), y1=140-55*Math.cos(a);
+    const x2=500+55*Math.sin(a), y2=140+55*Math.cos(a);
+    drawArrow(windG,x1,y1,x2,y2,'#0b5cab',3,'');
+    addText(windG,350,y,`WIND ${label}: FROM ${d.toFixed(1)}° ${compassDir(d).split(' ')[1]||''}`,9,800,'#0b5cab');
   };
-  drawWind(startWind,'START',0);
-  drawWind(endWind,'END',13);
+  drawWind(startWind,'START',216); drawWind(endWind,'END',228);
 
-  // Capture badges are placed near the lower-left portion of the sketch.
-  const checks=[];
-  if(startSun)checks.push(`SUN START: ${startSun.ok===true?'PASS':startSun.ok===false?'REVIEW':'MANUAL'} • ${startSun.timestamp||''}`);
-  if(endSun)checks.push(`SUN END: ${endSun.ok===true?'PASS':endSun.ok===false?'REVIEW':'MANUAL'} • ${endSun.timestamp||''}`);
-  if(weatherSnapshots.start)checks.push(`WEATHER START: ${weatherSnapshots.start.timestamp||''}`);
-  if(weatherSnapshots.end)checks.push(`WEATHER END: ${weatherSnapshots.end.timestamp||''}`);
-  checks.slice(0,4).forEach((txt,i)=>capG.appendChild(sketchSvgEl('text',{x:12,y:218+i*10,fill:'#444','font-size':8,'font-weight':i<2?700:600},txt)));
+  // Capture/check information is shown directly on the sketch so the diagram documents what was used.
+  let y=242;
+  if(startSun){ addText(capG,12,y,`☀ SUN START CHECK: ${startSun.ok===true?'PASS':startSun.ok===false?'REVIEW':'MANUAL'} • ${startSun.timestamp||''}`,8,800); y+=9; }
+  if(endSun){ addText(capG,12,y,`☀ SUN END CHECK: ${endSun.ok===true?'PASS':endSun.ok===false?'REVIEW':'MANUAL'} • ${endSun.timestamp||''}`,8,800); y+=9; }
+  if(weatherSnapshots.start){ addText(capG,12,y,`💨 WEATHER START: WIND ${Number(weatherSnapshots.start.dir).toFixed(1)}° FROM • ${weatherSnapshots.start.timestamp||''}`,8,700); y+=9; }
+  if(weatherSnapshots.end){ addText(capG,12,y,`💨 WEATHER END: WIND ${Number(weatherSnapshots.end.dir).toFixed(1)}° FROM • ${weatherSnapshots.end.timestamp||''}`,8,700); }
 
-  // Compact legend so the source sketch explains what was auto-populated.
-  capG.appendChild(sketchSvgEl('text',{x:430,y:242,fill:'#555','font-size':8},'Auto: sun az/el • weather wind FROM • sun check'));
+  addText(capG,430,20,'AUTO: TRUE AZIMUTH / WIND FROM',8,700,'#555');
 }
 
 async function fetchLocalWeather(){
