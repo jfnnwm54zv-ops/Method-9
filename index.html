@@ -217,6 +217,16 @@ svg{width:100%;height:260px;border:1px dashed #b9c6d3;border-radius:10px;backgro
       <div class="weather-panel"><div class="small">Sky / conditions</div><div class="weather-value" id="weatherSky">—</div></div>
     </div>
     <div class="weather-source" id="weatherSource">No weather reading retrieved yet.</div>
+    <div class="card" style="margin-top:10px;background:#f7fbff">
+      <h2 style="margin-bottom:6px">Automatic weather capture record</h2>
+      <div class="grid">
+        <label>START weather captured<input id="weatherCaptureStart" readonly></label>
+        <label>END weather captured<input id="weatherCaptureEnd" readonly></label>
+        <label>START captured wind direction<input id="weatherWindDirStart" readonly></label>
+        <label>END captured wind direction<input id="weatherWindDirEnd" readonly></label>
+      </div>
+      <div class="small" style="margin-top:7px">Wind direction is recorded from the weather service in degrees true and is also copied into the Method 9 START/END wind-direction fields. Verify against an on-site instrument when required.</div>
+    </div>
   </div>
 
   <div class="card">
@@ -242,6 +252,18 @@ svg{width:100%;height:260px;border:1px dashed #b9c6d3;border-radius:10px;backgro
     </div>
     <div id="sunAutoStatus" class="status warn" style="margin-top:9px">Sun check uses your observer GPS, emission-point GPS, and current date/time. The app will also attempt the check automatically when the timed observation starts and ends.</div>
     <div id="sunDetails" class="small" style="margin-top:7px">No automatic sun-position calculation yet.</div>
+    <div class="card" style="margin-top:10px;background:#f7fbff">
+      <h2 style="margin-bottom:6px">Automatic sun position / check capture</h2>
+      <div class="grid3">
+        <label>START sun azimuth (° true)<input id="sunAzimuthStart" readonly></label>
+        <label>START sun elevation (°)<input id="sunElevationStart" readonly></label>
+        <label>START sun check captured<input id="sunCaptureStart" readonly></label>
+        <label>END sun azimuth (° true)<input id="sunAzimuthEnd" readonly></label>
+        <label>END sun elevation (°)<input id="sunElevationEnd" readonly></label>
+        <label>END sun check captured<input id="sunCaptureEnd" readonly></label>
+      </div>
+      <div class="small" style="margin-top:7px">Each automatic capture records the sun's calculated azimuth/elevation, the Method 9 horizontal/vertical check, PASS/REVIEW result, and timestamp.</div>
+    </div>
     <div class="notice" style="margin-top:9px">
       This check is a field aid, not a substitute for the applicable permit/SIP/NSPS requirements or qualified observer judgment.
     </div>
@@ -277,6 +299,10 @@ svg{width:100%;height:260px;border:1px dashed #b9c6d3;border-radius:10px;backgro
       <text x="350" y="55" font-size="12">Sun</text>
       <line x1="160" y1="155" x2="450" y2="140" stroke="#333" stroke-width="2"/>
       <text x="270" y="135" font-size="12">Plume / sight line</text>
+      <!-- Automatic source-sketch overlays -->
+      <g id="sketchSunOverlay"></g>
+      <g id="sketchWindOverlay"></g>
+      <g id="sketchCaptureOverlay"></g>
     </svg>
     <div class="actions" style="margin-top:8px"><button class="secondary" onclick="clearSketch()">Clear drawing</button></div>
   </div>
@@ -384,6 +410,7 @@ let readings=Array(240).fill(null), comments=Array(60).fill(''), quickValue=null
 let timerHandle=null, seconds=0;
 let testTimer=null, testRunning=false, testPaused=false, testStartMs=0, testElapsedSec=0;
 let stopwatchHandle=null, stopwatchRunning=false, stopwatchElapsedSec=0, weatherData=null;
+let weatherSnapshots={start:null,end:null}, sunSnapshots={start:null,end:null};
 
 function $(id){return document.getElementById(id)}
 const html={escape:v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;')};
@@ -392,6 +419,7 @@ function save(){
   const data={};
   ids.forEach(id=>data[id]=val(id));
   data.readings=readings; data.comments=comments; data.stopwatchElapsedSec=stopwatchElapsedSec; data.stopwatchRunning=stopwatchRunning;
+  data.weatherSnapshots=weatherSnapshots; data.sunSnapshots=sunSnapshots;
   localStorage.setItem('method9Data',JSON.stringify(data));
 }
 function updateSaveStatus(msg='Saved'){
@@ -431,6 +459,21 @@ function restoreAutosave(){
     return true;
   }catch(e){return false}
 }
+function restoreSnapshotFields(){
+  ['start','end'].forEach(side=>{
+    const w=weatherSnapshots[side], u=side==='start'?'Start':'End';
+    if(w){
+      $(`weatherCapture${u}`).value=w.timestamp||'';
+      $(`weatherWindDir${u}`).value=Number.isFinite(w.dir)?`${w.dir.toFixed(1)}° true (${compassDir(w.dir)})`:'';
+    }
+    const sn=sunSnapshots[side];
+    if(sn){
+      $(`sunAzimuth${u}`).value=Number.isFinite(sn.azimuth)?sn.azimuth.toFixed(1):'';
+      $(`sunElevation${u}`).value=Number.isFinite(sn.elevation)?sn.elevation.toFixed(1):'';
+      $(`sunCapture${u}`).value=sn.timestamp||'';
+    }
+  });
+}
 function load(){
   const raw=localStorage.getItem('method9Data');
   if(!raw){ $('date').value=new Date().toISOString().slice(0,10); render(); return; }
@@ -438,11 +481,15 @@ function load(){
     const d=JSON.parse(raw);
     ids.forEach(id=>{if(d[id]!==undefined)$(id).value=d[id]});
     if(Array.isArray(d.readings)) readings=d.readings; if(Array.isArray(d.comments)) comments=d.comments;
+    if(d.weatherSnapshots && typeof d.weatherSnapshots==='object') weatherSnapshots=d.weatherSnapshots;
+    if(d.sunSnapshots && typeof d.sunSnapshots==='object') sunSnapshots=d.sunSnapshots;
     stopwatchElapsedSec=Number(d.stopwatchElapsedSec||0); stopwatchRunning=Boolean(d.stopwatchRunning);
     if(stopwatchRunning){stopwatchStartMs=Date.now()-stopwatchElapsedSec*1000;clearInterval(stopwatchHandle);stopwatchHandle=setInterval(updateStopwatch,250);}
     updateStopwatch();
   }catch(e){}
   render();
+  restoreSnapshotFields();
+  renderSourceSketchAnnotations();
 }
 ids.forEach(id=>document.addEventListener('input',e=>{if(e.target.id===id){save();updateAll()}}));
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
@@ -675,12 +722,18 @@ function applySunCheck(side,r=null){
   if(!r){
     const h=Number(val('sunHorizontal')),v=Number(val('sunVertical'));
     if(!Number.isFinite(h)||!Number.isFinite(v)){alert('Run CHECK SUN POSITION NOW first.');return;}
-    r={horizontal:h,vertical:v};
+    r={horizontal:h,vertical:v,pos:{azimuth:null,elevation:null},ok:null};
   }
-  $(side==='start'?'sunHorizontalStart':'sunHorizontalEnd').value=r.horizontal.toFixed(1);
-  $(side==='start'?'sunVerticalStart':'sunVerticalEnd').value=r.vertical.toFixed(1);
-  $(side==='start'?'sunCheckStart':'sunCheckEnd').value=r.ok?'PASS':'REVIEW';
+  const stamp=new Date().toLocaleString();
+  $(side==='start'?'sunHorizontalStart':'sunHorizontalEnd').value=Number.isFinite(r.horizontal)?r.horizontal.toFixed(1):'';
+  $(side==='start'?'sunVerticalStart':'sunVerticalEnd').value=Number.isFinite(r.vertical)?r.vertical.toFixed(1):'';
+  $(side==='start'?'sunCheckStart':'sunCheckEnd').value=r.ok===true?'PASS':r.ok===false?'REVIEW':'MANUAL';
+  $(side==='start'?'sunAzimuthStart':'sunAzimuthEnd').value=r.pos&&Number.isFinite(r.pos.azimuth)?r.pos.azimuth.toFixed(1):'';
+  $(side==='start'?'sunElevationStart':'sunElevationEnd').value=r.pos&&Number.isFinite(r.pos.elevation)?r.pos.elevation.toFixed(1):'';
+  $(side==='start'?'sunCaptureStart':'sunCaptureEnd').value=stamp;
+  sunSnapshots[side]={timestamp:stamp,azimuth:r.pos?.azimuth??null,elevation:r.pos?.elevation??null,horizontal:r.horizontal,vertical:r.vertical,ok:r.ok};
   save();
+  renderSourceSketchAnnotations();
 }
 function initQuickButtons(){
   const q=$('quickButtons'); q.innerHTML='';
@@ -846,6 +899,66 @@ function compassDir(deg){
   const dirs=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
   return `${Math.round(deg)}° ${dirs[Math.round(deg/22.5)%16]}`;
 }
+function sketchSvgEl(tag,attrs,text=''){
+  const e=document.createElementNS('http://www.w3.org/2000/svg',tag);
+  Object.entries(attrs||{}).forEach(([k,v])=>e.setAttribute(k,v));
+  if(text)e.textContent=text;
+  return e;
+}
+function sketchDirPoint(deg,r=82,cx=120,cy=155){
+  const a=deg2rad(Number(deg));
+  return {x:cx+r*Math.sin(a), y:cy-r*Math.cos(a)};
+}
+function renderSourceSketchAnnotations(){
+  const svg=$('sketch');
+  if(!svg)return;
+  const sunG=$('sketchSunOverlay'), windG=$('sketchWindOverlay'), capG=$('sketchCaptureOverlay');
+  if(!sunG||!windG||!capG)return;
+  sunG.innerHTML=''; windG.innerHTML=''; capG.innerHTML='';
+
+  const startSun=sunSnapshots.start, endSun=sunSnapshots.end;
+  const startWind=weatherSnapshots.start?.dir, endWind=weatherSnapshots.end?.dir;
+
+  // Sun position is drawn from the observer using true azimuth. START and END are both shown when available.
+  const drawSun=(snap,label,offsetY)=>{
+    if(!snap || !Number.isFinite(snap.azimuth))return;
+    const pt=sketchDirPoint(snap.azimuth,82,120,155);
+    const line=sketchSvgEl('line',{x1:120,y1:155,x2:pt.x,y2:pt.y,stroke:'#d18b00','stroke-width':3,'stroke-dasharray':'7 4'});
+    sunG.appendChild(line);
+    const circ=sketchSvgEl('circle',{cx:pt.x,cy:pt.y,r:9,fill:'white',stroke:'#d18b00','stroke-width':3}); sunG.appendChild(circ);
+    sunG.appendChild(sketchSvgEl('text',{x:Math.min(545,pt.x+12),y:Math.max(45,pt.y-7),fill:'#8a5b00','font-size':12,'font-weight':700},`☀ ${label}`));
+    sunG.appendChild(sketchSvgEl('text',{x:Math.min(545,pt.x+12),y:Math.max(60,pt.y+10),fill:'#8a5b00','font-size':10},`${snap.azimuth.toFixed(1)}° az / ${Number(snap.elevation).toFixed(1)}° el`));
+  };
+  drawSun(startSun,'START',0);
+  drawSun(endSun,'END',0);
+
+  // Wind direction from the weather capture is a meteorological FROM direction. Arrow points downwind; label retains FROM degree.
+  const drawWind=(dir,label,yOffset)=>{
+    if(!Number.isFinite(Number(dir)))return;
+    const d=Number(dir), from=sketchDirPoint(d,58,459,140), to=sketchDirPoint((d+180)%360,58,459,140);
+    const line=sketchSvgEl('line',{x1:from.x,y1:from.y,x2:to.x,y2:to.y,stroke:'#0b5cab','stroke-width':3});
+    const angle=Math.atan2(to.y-from.y,to.x-from.x), ah=9;
+    const p1={x:to.x-ah*Math.cos(angle-Math.PI/6),y:to.y-ah*Math.sin(angle-Math.PI/6)};
+    const p2={x:to.x-ah*Math.cos(angle+Math.PI/6),y:to.y-ah*Math.sin(angle+Math.PI/6)};
+    const poly=sketchSvgEl('polygon',{points:`${to.x},${to.y} ${p1.x},${p1.y} ${p2.x},${p2.y}`,fill:'#0b5cab'});
+    windG.appendChild(line); windG.appendChild(poly);
+    windG.appendChild(sketchSvgEl('text',{x:300,y:238+yOffset,fill:'#0b5cab','font-size':11,'font-weight':700},`WIND ${label}: FROM ${d.toFixed(1)}° ${compassDir(d).split(' ')[1]||''}`));
+  };
+  drawWind(startWind,'START',0);
+  drawWind(endWind,'END',13);
+
+  // Capture badges are placed near the lower-left portion of the sketch.
+  const checks=[];
+  if(startSun)checks.push(`SUN START: ${startSun.ok===true?'PASS':startSun.ok===false?'REVIEW':'MANUAL'} • ${startSun.timestamp||''}`);
+  if(endSun)checks.push(`SUN END: ${endSun.ok===true?'PASS':endSun.ok===false?'REVIEW':'MANUAL'} • ${endSun.timestamp||''}`);
+  if(weatherSnapshots.start)checks.push(`WEATHER START: ${weatherSnapshots.start.timestamp||''}`);
+  if(weatherSnapshots.end)checks.push(`WEATHER END: ${weatherSnapshots.end.timestamp||''}`);
+  checks.slice(0,4).forEach((txt,i)=>capG.appendChild(sketchSvgEl('text',{x:12,y:218+i*10,fill:'#444','font-size':8,'font-weight':i<2?700:600},txt)));
+
+  // Compact legend so the source sketch explains what was auto-populated.
+  capG.appendChild(sketchSvgEl('text',{x:430,y:242,fill:'#555','font-size':8},'Auto: sun az/el • weather wind FROM • sun check'));
+}
+
 async function fetchLocalWeather(){
   if(!navigator.geolocation) throw new Error('This browser does not provide location access.');
   const pos=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:15000,maximumAge:300000}));
@@ -872,6 +985,12 @@ async function autoCaptureWeather(side){
   try{
     $('weatherStatus').className='status warn'; $('weatherStatus').textContent=`Automatically capturing ${side.toUpperCase()} weather…`;
     const d=await fetchLocalWeather(); displayWeather(d); applyWeather(side);
+    const stamp=new Date().toLocaleString();
+    weatherSnapshots[side]={timestamp:stamp,temp:d.temp,rh:d.rh,wind:d.wind,dir:d.dir,sky:d.sky,wetBulb:d.wetBulb,lat:d.lat,lon:d.lon,timezone:d.timezone};
+    $(side==='start'?'weatherCaptureStart':'weatherCaptureEnd').value=stamp;
+    $(side==='start'?'weatherWindDirStart':'weatherWindDirEnd').value=Number.isFinite(d.dir)?`${d.dir.toFixed(1)}° true (${compassDir(d.dir)})`:'';
+    save();
+    renderSourceSketchAnnotations();
     $('weatherStatus').className='status ok'; $('weatherStatus').textContent=`${side.toUpperCase()} weather automatically populated. Verify actual field conditions.`;
   }catch(e){
     $('weatherStatus').className='status bad'; $('weatherStatus').textContent=`Automatic weather capture failed: ${e.code===1?'location permission denied':e.message}. You can enter conditions manually.`;
@@ -901,6 +1020,7 @@ function calculateDistance(){
   $('obsDistanceDirection').value=`${Math.round(distFt)} ft / ${Math.round(bearing)}° to emission point; reciprocal ${Math.round((bearing+180)%360)}° to observer`;
   $('distanceStatus').className='status ok'; $('distanceStatus').textContent=`AUTO: ${Math.round(distFt).toLocaleString()} ft (${(distFt/5280).toFixed(3)} mi) • direction to emission point: ${bearing.toFixed(1)}° true (${compassDir(bearing)}). Reciprocal observer direction: ${((bearing+180)%360).toFixed(1)}° true. Verify with a compass/map/rangefinder when required.`;
   save(); updateAll();
+  renderSourceSketchAnnotations();
 }
 async function getLocalWeather(){
   const status=$('weatherStatus'); status.className='status warn'; status.textContent='Requesting your location and nearby weather…';
@@ -939,8 +1059,8 @@ function clearSketch(){
   // SVG is reset by replacing with the original drawing.
   const parent=s.parentNode, clone=s.cloneNode(false);
   clone.setAttribute('viewBox','0 0 600 260');
-  clone.innerHTML=`<rect x="0" y="0" width="600" height="260" fill="white"/><text x="20" y="25" font-size="16" font-weight="700">Source Layout Sketch</text><text x="430" y="25" font-size="12">N ↑</text><line x1="80" y1="180" x2="500" y2="180" stroke="#999" stroke-dasharray="6 5"/><text x="240" y="200" font-size="12">Sun location line</text><circle cx="120" cy="155" r="8" fill="black"/><text x="95" y="145" font-size="12">Observer</text><rect x="450" y="100" width="18" height="80" fill="none" stroke="black" stroke-width="3"/><text x="420" y="95" font-size="12">Emission point</text><circle cx="330" cy="50" r="13" fill="none" stroke="#333" stroke-width="2"/><text x="350" y="55" font-size="12">Sun</text><line x1="160" y1="155" x2="450" y2="140" stroke="#333" stroke-width="2"/><text x="270" y="135" font-size="12">Plume / sight line</text>`;
-  parent.replaceChild(clone,s); enableSketch();
+  clone.innerHTML=`<rect x="0" y="0" width="600" height="260" fill="white"/><text x="20" y="25" font-size="16" font-weight="700">Source Layout Sketch</text><text x="430" y="25" font-size="12">N ↑</text><line x1="80" y1="180" x2="500" y2="180" stroke="#999" stroke-dasharray="6 5"/><text x="240" y="200" font-size="12">Sun location line</text><circle cx="120" cy="155" r="8" fill="black"/><text x="95" y="145" font-size="12">Observer</text><rect x="450" y="100" width="18" height="80" fill="none" stroke="black" stroke-width="3"/><text x="420" y="95" font-size="12">Emission point</text><circle cx="330" cy="50" r="13" fill="none" stroke="#333" stroke-width="2"/><text x="350" y="55" font-size="12">Sun</text><line x1="160" y1="155" x2="450" y2="140" stroke="#333" stroke-width="2"/><text x="270" y="135" font-size="12">Plume / sight line</text><g id="sketchSunOverlay"></g><g id="sketchWindOverlay"></g><g id="sketchCaptureOverlay"></g>`;
+  parent.replaceChild(clone,s); enableSketch(); renderSourceSketchAnnotations();
 }
 function enableSketch(){
   const svg=$('sketch'); let drawing=false,last=null;
@@ -1112,6 +1232,13 @@ function buildReport(){
       Observer-to-plume deviation: ${esc(val('perpDeviation'))}°
     </div>
     <div class="print-results">
+      <b>AUTOMATIC FIELD CONDITION CAPTURES</b><br>
+      START weather: ${esc(weatherSnapshots.start?.timestamp||'—')} &nbsp; | &nbsp; Wind: ${Number.isFinite(weatherSnapshots.start?.dir)?weatherSnapshots.start.dir.toFixed(1)+'° true ('+compassDir(weatherSnapshots.start.dir)+')':'—'}<br>
+      END weather: ${esc(weatherSnapshots.end?.timestamp||'—')} &nbsp; | &nbsp; Wind: ${Number.isFinite(weatherSnapshots.end?.dir)?weatherSnapshots.end.dir.toFixed(1)+'° true ('+compassDir(weatherSnapshots.end.dir)+')':'—'}<br>
+      START sun: ${Number.isFinite(sunSnapshots.start?.azimuth)?sunSnapshots.start.azimuth.toFixed(1)+'° azimuth / '+sunSnapshots.start.elevation.toFixed(1)+'° elevation':'—'} &nbsp; | &nbsp; Check: ${esc(sunSnapshots.start?.ok===true?'PASS':sunSnapshots.start?.ok===false?'REVIEW':'—')}<br>
+      END sun: ${Number.isFinite(sunSnapshots.end?.azimuth)?sunSnapshots.end.azimuth.toFixed(1)+'° azimuth / '+sunSnapshots.end.elevation.toFixed(1)+'° elevation':'—'} &nbsp; | &nbsp; Check: ${esc(sunSnapshots.end?.ok===true?'PASS':sunSnapshots.end?.ok===false?'REVIEW':'—')}
+    </div>
+    <div class="print-results">
       <b>IMPORTANT RECORD NOTE</b><br>
       This electronic report is a data-entry and calculation record. The applicable regulation, permit, observer qualification requirements, and source-specific data-reduction requirements control the final compliance determination.
     </div>
@@ -1120,6 +1247,7 @@ function buildReport(){
   $('reportContent').innerHTML=`<div class="print-report">${pagesHtml}</div>`;
 }
 enableSketch();
+renderSourceSketchAnnotations();
 initQuickButtons();
 updateStopwatch();
 load();
