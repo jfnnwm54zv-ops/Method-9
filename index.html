@@ -286,19 +286,52 @@ svg{width:100%;height:260px;border:1px dashed #b9c6d3;border-radius:10px;backgro
   <div class="card no-print">
     <h2>Source layout sketch</h2>
     <div class="small">Draw the source, observer, sun direction and wind direction. Use your finger on the screen.</div>
-    <svg id="sketch" viewBox="0 0 600 260">
-      <rect x="0" y="0" width="600" height="260" fill="white"/>
-      <text x="20" y="25" font-size="16" font-weight="700">Source Layout Sketch</text>
-      <text x="430" y="25" font-size="12">N ↑</text>
-      <line x1="80" y1="180" x2="500" y2="180" stroke="#999" stroke-dasharray="6 5"/>
-      <text x="240" y="200" font-size="12">Sun location line</text>
-      <circle cx="120" cy="155" r="8" fill="black"/><text x="95" y="145" font-size="12">Observer</text>
-      <rect x="450" y="100" width="18" height="80" fill="none" stroke="black" stroke-width="3"/>
-      <text x="420" y="95" font-size="12">Emission point</text>
-      <circle cx="330" cy="50" r="13" fill="none" stroke="#333" stroke-width="2"/>
-      <text x="350" y="55" font-size="12">Sun</text>
-      <line x1="160" y1="155" x2="450" y2="140" stroke="#333" stroke-width="2"/>
-      <text x="270" y="135" font-size="12">Plume / sight line</text>
+    <svg id="sketch" viewBox="0 0 900 520" aria-label="EPA Method 9 Source Layout Sketch">
+      <rect x="0" y="0" width="900" height="520" fill="white"/>
+      <text x="24" y="34" font-size="22" font-weight="800">Source Layout Sketch</text>
+      <text x="744" y="30" font-size="15" font-weight="700">Draw North Arrow</text>
+      <text x="750" y="54" font-size="13">☑ TN  ☐ MN</text>
+      <circle cx="800" cy="100" r="40" fill="white" stroke="#222" stroke-width="2"/>
+      <line x1="800" y1="126" x2="800" y2="73" stroke="#111" stroke-width="8" stroke-linecap="round"/>
+      <polygon points="800,60 787,82 813,82" fill="#111"/>
+
+      <!-- Main plan view -->
+      <line x1="330" y1="118" x2="330" y2="292" stroke="#222" stroke-width="3"/>
+      <text x="346" y="126" font-size="17" font-weight="700">Observation Point</text>
+      <text x="316" y="112" font-size="26" font-weight="900">X</text>
+      <circle cx="330" cy="292" r="9" fill="#111"/>
+      <text x="348" y="298" font-size="17" font-weight="700">Observer's Position</text>
+
+      <!-- 140 degree viewing angle -->
+      <line x1="330" y1="292" x2="65" y2="420" stroke="#222" stroke-width="2.5"/>
+      <line x1="330" y1="292" x2="595" y2="420" stroke="#222" stroke-width="2.5"/>
+      <path d="M270 321 A72 72 0 0 0 390 321" fill="none" stroke="#222" stroke-width="2.5"/>
+      <text x="318" y="346" font-size="18" font-weight="700">140°</text>
+      <line x1="55" y1="420" x2="610" y2="420" stroke="#777" stroke-width="2" stroke-dasharray="8 7"/>
+      <text x="275" y="447" font-size="17">Sun Location Line</text>
+
+      <!-- Side view -->
+      <rect x="650" y="175" width="225" height="135" fill="white" stroke="#222" stroke-width="2"/>
+      <text x="735" y="198" font-size="16" font-weight="800">SIDE VIEW</text>
+      <rect x="680" y="220" width="15" height="62" fill="white" stroke="#222" stroke-width="2"/>
+      <path d="M695 230 C725 218 742 238 765 226 C785 216 803 230 825 220" fill="none" stroke="#777" stroke-width="10" opacity=".55"/>
+      <line x1="710" y1="240" x2="835" y2="240" stroke="#222" stroke-width="1.5"/>
+      <text x="790" y="235" font-size="14">___ FT ___</text>
+      <line x1="695" y1="292" x2="850" y2="292" stroke="#222" stroke-width="1.5"/>
+      <line x1="695" y1="286" x2="695" y2="298" stroke="#222" stroke-width="1.5"/>
+      <line x1="850" y1="286" x2="850" y2="298" stroke="#222" stroke-width="1.5"/>
+      <text x="748" y="307" font-size="14">___ FT ___</text>
+
+      <!-- Legend -->
+      <rect x="650" y="325" width="225" height="150" fill="white" stroke="#222" stroke-width="2"/>
+      <rect x="672" y="345" width="13" height="45" fill="white" stroke="#222" stroke-width="2"/>
+      <text x="700" y="372" font-size="14">Stack with Plume</text>
+      <circle cx="680" cy="418" r="13" fill="none" stroke="#c27a00" stroke-width="2"/>
+      <text x="700" y="423" font-size="14">Sun</text>
+      <line x1="672" y1="454" x2="713" y2="454" stroke="#0b5cab" stroke-width="4"/>
+      <polygon points="720,454 708,447 708,461" fill="#0b5cab"/>
+      <text x="735" y="459" font-size="14">Wind</text>
+
       <!-- Automatic source-sketch overlays -->
       <g id="sketchSunOverlay"></g>
       <g id="sketchWindOverlay"></g>
@@ -923,7 +956,7 @@ function sketchSvgEl(tag,attrs,text=''){
   if(text)e.textContent=text;
   return e;
 }
-function sketchDirPoint(deg,r=82,cx=120,cy=155){
+function sketchDirPoint(deg,r=120,cx=330,cy=292){
   const a=deg2rad(Number(deg));
   return {x:cx+r*Math.sin(a), y:cy-r*Math.cos(a)};
 }
@@ -951,15 +984,15 @@ function renderSourceSketchAnnotations(){
 
   // Draw the actual observer-to-source bearing when available.
   if(Number.isFinite(sourceBearing)){
-    const pt=sketchDirPoint(sourceBearing,300,120,155);
-    drawArrow(capG,120,155,Math.min(450,pt.x),Math.max(70,Math.min(180,pt.y)),'#333',3,'');
-    addText(capG,205,112,`SOURCE BEARING ${sourceBearing.toFixed(1)}° TRUE (${compassDir(sourceBearing).split(' ')[1]||''})`,9,800);
+    const pt=sketchDirPoint(sourceBearing,240,330,292);
+    drawArrow(capG,120,155,Math.min(610,Math.max(55,pt.x)),Math.max(90,Math.min(420,pt.y)),'#333',3,'');
+    addText(capG,190,105,`SOURCE BEARING ${sourceBearing.toFixed(1)}° TRUE (${compassDir(sourceBearing).split(' ')[1]||''})`,9,800);
   }
 
   const drawSun=(snap,label,offset)=>{
     if(!snap || !Number.isFinite(snap.azimuth))return;
-    const pt=sketchDirPoint(snap.azimuth,105,120,155);
-    drawArrow(sunG,120,155,pt.x,pt.y,'#c27a00',3,'8 5');
+    const pt=sketchDirPoint(snap.azimuth,120,330,292);
+    drawArrow(sunG,330,292,pt.x,pt.y,'#c27a00',3,'8 5');
     sunG.appendChild(sketchSvgEl('circle',{cx:pt.x,cy:pt.y,r:10,fill:'white',stroke:'#c27a00','stroke-width':3}));
     addText(sunG,Math.min(470,pt.x+12),Math.max(48,pt.y-8),`☀ ${label}`,11,800,'#8a5b00');
     addText(sunG,Math.min(500,pt.x+12),Math.max(62,pt.y+9),`${snap.azimuth.toFixed(1)}° az / ${Number(snap.elevation).toFixed(1)}° el`,9,600,'#8a5b00');
@@ -970,10 +1003,10 @@ function renderSourceSketchAnnotations(){
   const drawWind=(dir,label,y)=>{
     if(!Number.isFinite(Number(dir)))return;
     const d=Number(dir), a=deg2rad(d+180);
-    const x1=500-55*Math.sin(a), y1=140-55*Math.cos(a);
-    const x2=500+55*Math.sin(a), y2=140+55*Math.cos(a);
+    const x1=760-55*Math.sin(a), y1=430-55*Math.cos(a);
+    const x2=760+55*Math.sin(a), y2=430+55*Math.cos(a);
     drawArrow(windG,x1,y1,x2,y2,'#0b5cab',3,'');
-    addText(windG,350,y,`WIND ${label}: FROM ${d.toFixed(1)}° ${compassDir(d).split(' ')[1]||''}`,9,800,'#0b5cab');
+    addText(windG,650,y,`WIND ${label}: FROM ${d.toFixed(1)}° ${compassDir(d).split(' ')[1]||''}`,9,800,'#0b5cab');
   };
   drawWind(startWind,'START',216); drawWind(endWind,'END',228);
 
@@ -1091,11 +1124,10 @@ function fillDemo(){
   render();save();
 }
 function clearSketch(){
-  const s=$('sketch'); const ctx=s.getContext?null:null;
-  // SVG is reset by replacing with the original drawing.
+  const s=$('sketch');
   const parent=s.parentNode, clone=s.cloneNode(false);
-  clone.setAttribute('viewBox','0 0 600 260');
-  clone.innerHTML=`<rect x="0" y="0" width="600" height="260" fill="white"/><text x="20" y="25" font-size="16" font-weight="700">Source Layout Sketch</text><text x="430" y="25" font-size="12">N ↑</text><line x1="80" y1="180" x2="500" y2="180" stroke="#999" stroke-dasharray="6 5"/><text x="240" y="200" font-size="12">Sun location line</text><circle cx="120" cy="155" r="8" fill="black"/><text x="95" y="145" font-size="12">Observer</text><rect x="450" y="100" width="18" height="80" fill="none" stroke="black" stroke-width="3"/><text x="420" y="95" font-size="12">Emission point</text><circle cx="330" cy="50" r="13" fill="none" stroke="#333" stroke-width="2"/><text x="350" y="55" font-size="12">Sun</text><line x1="160" y1="155" x2="450" y2="140" stroke="#333" stroke-width="2"/><text x="270" y="135" font-size="12">Plume / sight line</text><g id="sketchSunOverlay"></g><g id="sketchWindOverlay"></g><g id="sketchCaptureOverlay"></g>`;
+  clone.setAttribute('viewBox','0 0 900 520');
+  clone.innerHTML=`<rect x="0" y="0" width="900" height="520" fill="white"/><text x="24" y="34" font-size="22" font-weight="800">Source Layout Sketch</text><text x="744" y="30" font-size="15" font-weight="700">Draw North Arrow</text><text x="750" y="54" font-size="13">☑ TN  ☐ MN</text><circle cx="800" cy="100" r="40" fill="white" stroke="#222" stroke-width="2"/><line x1="800" y1="126" x2="800" y2="73" stroke="#111" stroke-width="8" stroke-linecap="round"/><polygon points="800,60 787,82 813,82" fill="#111"/><line x1="330" y1="118" x2="330" y2="292" stroke="#222" stroke-width="3"/><text x="346" y="126" font-size="17" font-weight="700">Observation Point</text><text x="316" y="112" font-size="26" font-weight="900">X</text><circle cx="330" cy="292" r="9" fill="#111"/><text x="348" y="298" font-size="17" font-weight="700">Observer's Position</text><line x1="330" y1="292" x2="65" y2="420" stroke="#222" stroke-width="2.5"/><line x1="330" y1="292" x2="595" y2="420" stroke="#222" stroke-width="2.5"/><path d="M270 321 A72 72 0 0 0 390 321" fill="none" stroke="#222" stroke-width="2.5"/><text x="318" y="346" font-size="18" font-weight="700">140°</text><line x1="55" y1="420" x2="610" y2="420" stroke="#777" stroke-width="2" stroke-dasharray="8 7"/><text x="275" y="447" font-size="17">Sun Location Line</text><rect x="650" y="175" width="225" height="135" fill="white" stroke="#222" stroke-width="2"/><text x="735" y="198" font-size="16" font-weight="800">SIDE VIEW</text><rect x="680" y="220" width="15" height="62" fill="white" stroke="#222" stroke-width="2"/><path d="M695 230 C725 218 742 238 765 226 C785 216 803 230 825 220" fill="none" stroke="#777" stroke-width="10" opacity=".55"/><line x1="710" y1="240" x2="835" y2="240" stroke="#222" stroke-width="1.5"/><text x="790" y="235" font-size="14">___ FT ___</text><line x1="695" y1="292" x2="850" y2="292" stroke="#222" stroke-width="1.5"/><line x1="695" y1="286" x2="695" y2="298" stroke="#222" stroke-width="1.5"/><line x1="850" y1="286" x2="850" y2="298" stroke="#222" stroke-width="1.5"/><text x="748" y="307" font-size="14">___ FT ___</text><rect x="650" y="325" width="225" height="150" fill="white" stroke="#222" stroke-width="2"/><rect x="672" y="345" width="13" height="45" fill="white" stroke="#222" stroke-width="2"/><text x="700" y="372" font-size="14">Stack with Plume</text><circle cx="680" cy="418" r="13" fill="none" stroke="#c27a00" stroke-width="2"/><text x="700" y="423" font-size="14">Sun</text><line x1="672" y1="454" x2="713" y2="454" stroke="#0b5cab" stroke-width="4"/><polygon points="720,454 708,447 708,461" fill="#0b5cab"/><text x="735" y="459" font-size="14">Wind</text><g id="sketchSunOverlay"></g><g id="sketchWindOverlay"></g><g id="sketchCaptureOverlay"></g>`;
   parent.replaceChild(clone,s); enableSketch(); renderSourceSketchAnnotations();
 }
 function enableSketch(){
