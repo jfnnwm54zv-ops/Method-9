@@ -765,7 +765,7 @@ function recordQuick(){
     finishOneHourTest();
   }
 }
-function startOneHourTest(){
+async function startOneHourTest(){
   if(testRunning){return}
   if(readings.some(x=>x!=null) && !confirm('Start a new 1-hour test and clear the current readings?')) return;
   readings=Array(240).fill(null);
@@ -775,12 +775,23 @@ function startOneHourTest(){
   testPaused=false;
   testStartMs=Date.now();
   testElapsedSec=0;
-  autoCaptureWeather('start');
-  autoCaptureSun('start');
+  $('startTestBtn').disabled=true;
+  $('testStatus').textContent='STARTING — CAPTURING FIELD CONDITIONS';
+  $('testStatus').style.color='#a15c00';
+  $('testNotice').textContent='Capturing START GPS/weather, wind direction, sun position/check, distance and bearing. The timed observation will begin after the automatic capture attempts finish.';
+  render();
+  updateTestClock();
+  save();
+  autoSave();
+  try{
+    await autoCaptureWeather('start');
+  }catch(e){}
+  try{
+    await autoCaptureSun('start');
+  }catch(e){}
   $('testStatus').textContent='RUNNING';
   $('testStatus').style.color='#16803c';
-  $('testNotice').textContent='Test started. Make one momentary observation every 15 seconds. Record the value when the timer reaches each observation point.';
-  $('startTestBtn').disabled=true;
+  $('testNotice').textContent='START conditions captured/attempted. Make one momentary opacity observation every 15 seconds.';
   clearInterval(testTimer);
   testTimer=setInterval(updateTestClock,250);
   render();
@@ -804,18 +815,25 @@ function pauseOneHourTest(){
   }
   updateTestClock();
 }
-function finishOneHourTest(){
+async function finishOneHourTest(){
   if(!testRunning && readings.filter(x=>x!=null).length===0)return;
   testRunning=false;
   testPaused=false;
   clearInterval(testTimer); testTimer=null;
   if(testStartMs && !testElapsedSec)testElapsedSec=Math.floor((Date.now()-testStartMs)/1000);
+  $('testStatus').textContent='FINISHING — CAPTURING END CONDITIONS';
+  $('testStatus').style.color='#a15c00';
+  $('testNotice').textContent='Capturing END GPS/weather, wind direction, sun position/check, distance and bearing.';
+  try{
+    await autoCaptureWeather('end');
+  }catch(e){}
+  try{
+    await autoCaptureSun('end');
+  }catch(e){}
   $('testStatus').textContent='FINISHED';
   $('testStatus').style.color='#0b5cab';
   $('startTestBtn').disabled=false;
-  $('testNotice').textContent=`Test finished with ${readings.filter(x=>x!=null).length} of 240 observations entered. Review Results before finalizing the record.`;
-  autoCaptureWeather('end');
-  autoCaptureSun('end');
+  $('testNotice').textContent=`Test finished with ${readings.filter(x=>x!=null).length} of 240 observations entered. END conditions captured/attempted. Review Results before finalizing the record.`;
   updateTestClock();
   updateResults();
   save();
