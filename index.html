@@ -851,14 +851,15 @@ function ensureAudio(){
       if(!AC) return false;
       audioCtx=new AC();
     }
-    if(audioCtx.state==='suspended') audioCtx.resume();
+    if(audioCtx.state==='suspended') audioCtx.resume().catch(()=>{});
     return true;
   }catch(e){ return false; }
 }
 function beepObservation(){
   try{
     if(!ensureAudio()) return;
-    const now=audioCtx.currentTime;
+    const play=()=>{
+      const now=audioCtx.currentTime;
     const osc=audioCtx.createOscillator();
     const gain=audioCtx.createGain();
     osc.type='sine'; osc.frequency.setValueAtTime(880,now);
@@ -866,8 +867,10 @@ function beepObservation(){
     gain.gain.setValueAtTime(0.0001,now);
     gain.gain.exponentialRampToValueAtTime(0.18,now+0.01);
     gain.gain.exponentialRampToValueAtTime(0.0001,now+0.18);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(now); osc.stop(now+0.2);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(now); osc.stop(now+0.2);
+    };
+    if(audioCtx.state==='running') play(); else audioCtx.resume().then(play).catch(()=>{});
   }catch(e){}
 }
 function updateObservationCue(force=false){
@@ -900,6 +903,8 @@ function clearObservationCue(){
 async function startOneHourTest(){
   if(testRunning){return}
   ensureAudio();
+  // iOS Safari requires audio initialization from the START tap. Prime the audio and beep immediately.
+  beepObservation();
   const runLabel=`${RUN_MINUTES}-minute`;
   if(readings.some(x=>x!=null) && !confirm(`Start a new ${runLabel} run and clear the current readings?`)) return;
   readings=Array(OBS_COUNT).fill(null);
@@ -916,6 +921,7 @@ async function startOneHourTest(){
   $('testStatus').style.color='#a15c00';
   $('testNotice').textContent='Capturing START GPS/weather, wind direction, sun position/check, distance and bearing. The timed observation will begin after the automatic capture attempts finish.';
   render();
+  updateObservationCue(true);
   updateTestClock();
   save();
   autoSave();
@@ -931,7 +937,7 @@ async function startOneHourTest(){
   clearInterval(testTimer);
   testTimer=setInterval(updateTestClock,100);
   render();
-  updateObservationCue(true);
+  updateObservationCue(false);
   save();
   autoSave();
   updateTestClock();
