@@ -1,403 +1,529 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#1768b0">
-<title>EPA Method 9 Field App</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>EPA Method 9 — Field App</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#f4f8fb;color:#17324a}
-header{background:#1768b0;color:white;padding:22px 16px 16px;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px #0002}
-h1{font-size:25px;margin:0 0 6px;font-weight:800}
-.sub{font-size:15px;opacity:.95}
-.tabs{display:flex;gap:8px;margin-top:16px;overflow:auto}
-.tabs button{border:0;border-radius:24px;padding:11px 16px;font-weight:800;font-size:15px;background:#2d7cc0;color:#fff;white-space:nowrap}
-.tabs button.active{background:#fff;color:#1768b0}
-main{max-width:900px;margin:auto;padding:16px}
-.card{background:white;border:2px solid #1768b0;border-radius:18px;padding:16px;margin-bottom:16px;box-shadow:0 2px 8px #0001}
-.card h2{margin:0 0 12px;font-size:20px}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-label{font-size:13px;font-weight:700}
-input,textarea,select{width:100%;font-size:16px;border:1px solid #b9c9d5;border-radius:9px;padding:10px;margin-top:5px;background:#fff}
-textarea{min-height:80px}
-button{font:inherit;cursor:pointer}
-.controls{display:flex;flex-wrap:wrap;gap:10px}
-.primary,.danger,.secondary{border:0;border-radius:12px;padding:14px 18px;font-weight:900}
-.primary{background:#1768b0;color:#fff}
-.secondary{background:#e7eef5;color:#17324a}
-.danger{background:#f8dede;color:#8d2727}
-.timer{text-align:center;font-size:58px;font-weight:900;letter-spacing:2px;color:#1768b0;margin:6px 0}
-.status{text-align:center;font-weight:800;padding:10px;border-radius:10px;background:#eef4ff;margin-bottom:12px}
-.status.running{background:#fff3a8}
-.readingBox{border:2px solid #b9c9d5;border-radius:14px;padding:12px;margin-top:12px}
-.current{background:#ffeb3b!important;border:3px solid #d49b00!important;box-shadow:0 0 0 4px #ffeb3b55}
-.readingButtons{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
-.readingButtons button{border:0;border-radius:9px;padding:10px 3px;background:#e7eef5;color:#17324a;font-weight:800}
-.readingButtons button.selected{background:#1768b0;color:#fff}
-table{border-collapse:collapse;width:100%;min-width:650px}
-.wrap{overflow:auto;border:1px solid #c6d2dc;border-radius:10px}
-th,td{border:1px solid #c6d2dc;text-align:center;padding:5px;font-size:13px}
-th{background:#edf3f7;position:sticky;top:0}
-td input{margin:0;min-width:65px;text-align:center;padding:8px 3px}
-td.activeCell{background:#ffeb3b}
-.small{font-size:13px;color:#5d6e7a}
-.hidden{display:none!important}
-.progress{height:12px;background:#e4ebf1;border-radius:8px;overflow:hidden}
-.progress>div{height:100%;width:0;background:#1768b0;transition:width .2s}
-.notice{padding:12px;background:#eef4ff;border-left:5px solid #1768b0;border-radius:8px;margin-top:10px}
-@media(max-width:600px){
- .grid{grid-template-columns:1fr}
- .timer{font-size:47px}
- .readingButtons{grid-template-columns:repeat(4,1fr)}
- main{padding:10px}
+:root{--blue:#1468b8;--dark:#16344d;--light:#eef5fb;--yellow:#fff36a;--red:#b3261e}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f8fb;color:var(--dark)}
+header{background:var(--blue);color:white;padding:18px 16px 16px;position:sticky;top:0;z-index:5}
+h1{font-size:25px;margin:0 0 6px;font-weight:800}header p{margin:0;font-size:14px}
+main{max-width:1050px;margin:auto;padding:14px}.card{background:white;border:2px solid #c8d8e6;border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 2px 7px #0000000b}
+h2{margin:0 0 12px;font-size:20px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+label{font-weight:700;font-size:13px}input,select,textarea{width:100%;margin-top:5px;border:1.5px solid #aebfce;border-radius:10px;padding:11px;font-size:16px;background:white}textarea{min-height:70px}
+button{border:0;border-radius:12px;padding:13px 16px;font-size:16px;font-weight:800;background:#e7eef5;color:var(--dark);margin:4px;cursor:pointer}
+button.primary{background:var(--blue);color:white}button.danger{background:#f9d9d7;color:#8d241e}button.active{outline:4px solid #8fc2ef}
+.controls{display:flex;flex-wrap:wrap;gap:4px}.status{font-size:16px;font-weight:800;padding:12px;border-radius:12px;background:#edf3ff;margin-top:8px}
+.timer{text-align:center;font-size:54px;font-weight:900;letter-spacing:2px;margin:5px 0;color:var(--blue)}
+.mode{text-align:center;font-weight:800;margin-bottom:10px}.choices{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.choices button{margin:0;padding:12px 4px}
+.reading-wrap{overflow:auto;border:1px solid #bccbd7;border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:760px;background:white}th,td{border:1px solid #9eafbd;text-align:center;padding:7px}th{background:#eaf1f7;position:sticky;top:0;z-index:1}
+td.obs{height:43px;min-width:85px;font-weight:800}td.obs.current{background:var(--yellow)!important;box-shadow:inset 0 0 0 3px #d1b900}
+td.obs input{width:72px;text-align:center;padding:7px;margin:0;border-radius:7px}
+.note{font-size:13px;color:#526575}.hidden{display:none}.success{background:#e5f6e9!important;color:#176b2b}.warning{background:#fff7d6!important}
+.sketch{width:100%;height:320px;border:2px solid #9eafbd;border-radius:12px;background:#fff;touch-action:none}
+.small{font-size:12px;color:#617382}.report{line-height:1.35}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.choices{grid-template-columns:repeat(4,1fr)}.timer{font-size:43px}header h1{font-size:22px}}
+
+@media print{
+  @page{size:Letter portrait;margin:0.22in}
+  body{background:white!important;color:#111}
+  body > header, body > main > *{display:none!important}
+  #printSheet{display:block!important}
+  .print-page{width:100%;height:10.55in;page-break-after:always;display:grid;grid-template-columns:43% 57%;font-family:Arial,Helvetica,sans-serif;color:#111;background:#fff}
+  .print-page:last-child{page-break-after:auto}
+  .print-left,.print-right{border:1px solid #111;min-width:0}
+  .print-left{padding:0.06in}
+  .print-right{padding:0.04in}
+  .print-title{font-size:10px;font-weight:700;text-align:center;margin:0 0 2px}
+  .print-subtitle{font-size:7px;text-align:center;margin:0 0 4px}
+  .box{border:1px solid #111;margin-bottom:2px}
+  .box-title{font-size:6.8px;font-weight:700;padding:2px 3px;border-bottom:1px solid #111}
+  .field-grid{display:grid;grid-template-columns:1fr 1fr}
+  .field{border-right:1px solid #111;border-bottom:1px solid #111;min-height:0;padding:2px 3px;font-size:6.6px}
+  .field:nth-child(2n){border-right:0}
+  .field.full{grid-column:1/-1;border-right:0}
+  .field .lab{display:block;font-size:5.7px;font-weight:700;text-transform:uppercase}
+  .field .val{display:block;font-size:7.1px;min-height:9px;white-space:pre-wrap;overflow:hidden}
+  .field .startend{display:flex;justify-content:space-between;font-size:5.5px;margin-top:1px}
+  .sketch-print{height:2.25in;border:1px solid #111;position:relative;overflow:hidden}
+  .sketch-print .sketch-img{width:100%;height:100%;object-fit:contain}
+  .sketch-placeholder{font-size:7px;text-align:center;padding-top:.9in}
+  .additional{height:.47in}
+  .print-right-head{display:grid;grid-template-columns:1.25fr 1fr 1fr;border-bottom:1px solid #111}
+  .rh{border-right:1px solid #111;padding:2px;font-size:6px;min-height:.22in}
+  .rh:last-child{border-right:0}
+  .rh b{display:block;font-size:5.2px;text-transform:uppercase}
+  .obs-print{width:100%;border-collapse:collapse;table-layout:fixed;font-size:6.2px}
+  .obs-print th,.obs-print td{border:1px solid #111;padding:1px 2px;height:.17in;text-align:center;vertical-align:middle}
+  .obs-print th{font-weight:700;background:#fff}
+  .obs-print .min{width:8%}
+  .obs-print .sec{width:9%}
+  .obs-print .comments{width:47%}
+  .obs-print .reading{font-size:7px}
+  .print-right-foot{margin-top:2px;border:1px solid #111}
+  .sig-grid{display:grid;grid-template-columns:1.6fr 1fr}
+  .sig{border-right:1px solid #111;border-bottom:1px solid #111;padding:2px;font-size:6px;min-height:.25in}
+  .sig:nth-child(2n){border-right:0}
+  .sig .lab{font-size:5.2px;font-weight:700}
+}
+#printSheet{display:none}
+
+@media screen{
+#printSheet{display:none!important}
+}
+@media print{
+header,.no-print{display:none!important}body{background:white}.card{box-shadow:none;border:1px solid #555;break-inside:avoid}main{max-width:none;padding:0}
 }
 </style>
 </head>
 <body>
 <header>
-  <h1>EPA Method 9 — Visible Emissions Field App</h1>
-  <div class="sub">15-second observations • 30- or 60-minute run • automatic advance</div>
-  <div class="tabs">
-    <button class="active" onclick="showTab('form',this)">EPA Form 1</button>
-    <button onclick="showTab('readings',this)">Readings</button>
-    <button onclick="showTab('results',this)">Results</button>
-    <button onclick="showTab('report',this)">Report</button>
-  </div>
+<h1>EPA Method 9 — Visible Emissions Field App</h1>
+<p>15-second observations • 30- or 60-minute test • field-sheet data • printable report</p>
 </header>
-
 <main>
-<section id="form">
-<div class="card">
-<h2>EPA Method 9 Observation Information</h2>
+
+<section class="card">
+<h2>1. Test Setup</h2>
+<div class="controls no-print">
+<button id="mode30" class="primary">30-MINUTE TEST</button>
+<button id="mode60">60-MINUTE TEST</button>
+</div>
 <div class="grid">
 <label>Company Name<input id="company"></label>
 <label>Observation Date<input id="date" type="date"></label>
-<label>Location<input id="location"></label>
-<label>Start Time<input id="startTime" type="time"></label>
-<label>City<input id="city"></label>
-<label>State<input id="state"></label>
-<label>ZIP<input id="zip"></label>
+<label>Location / Street<input id="location"></label>
+<label>City / State / ZIP<input id="city"></label>
 <label>Process Equipment<input id="process"></label>
-<label>Operating Mode<input id="operating"></label>
+<label>Operating Mode<input id="processMode"></label>
 <label>Control Equipment<input id="control"></label>
-<label>Control Operating Mode<input id="controlOperating"></label>
-<label>Describe Emission Point<input id="emission"></label>
-<label>Height of Emission Point<input id="height"></label>
+<label>Control Operating Mode<input id="controlMode"></label>
+<label>Describe Emission Point<input id="emissionPoint"></label>
+<label>Height of Emission Point<input id="stackHeight"></label>
+<label>Height Relative to Observer<input id="relativeHeight"></label>
 <label>Distance to Emission Point<input id="distance"></label>
-<label>Direction to Emission Point (degrees)<input id="direction" type="number" min="0" max="360"></label>
-<label>Observer Name<input id="observer"></label>
+<label>Direction to Emission Point (degrees)<input id="direction"></label>
+<label>Vertical Angle to Observation Point<input id="verticalAngle"></label>
+<label>Direction to Observation Point (degrees)<input id="obsDirection"></label>
+<label>Emission Color<input id="emissionColor"></label>
+<label>Water Droplet Plume<input id="waterPlume"></label>
+<label>Plume Background<input id="plumeBackground"></label>
+<label>Background Color<input id="backgroundColor"></label>
+<label>Sky Conditions<input id="sky"></label>
+<label>Wind Speed<input id="windSpeed"></label>
+<label>Wind Direction<input id="windDirection"></label>
+<label>Ambient Temperature<input id="ambient"></label>
+<label>Wet Bulb Temperature<input id="wetBulb"></label>
+<label>RH percent<input id="rh"></label>
+<label>Observer Name (Print)<input id="observer"></label>
 <label>Organization<input id="organization"></label>
 </div>
-<label style="display:block;margin-top:10px">Additional Information<textarea id="additional"></textarea></label>
-</div>
-
-<div class="card">
-<h2>Source Layout Sketch</h2>
-<div style="border:2px solid #777;border-radius:8px;padding:8px;text-align:center">
-<svg viewBox="0 0 700 360" width="100%" role="img" aria-label="Source layout sketch">
-<rect x="2" y="2" width="696" height="356" fill="white" stroke="#555"/>
-<text x="350" y="30" text-anchor="middle" font-size="20" font-weight="700">Source Layout Sketch</text>
-<text x="555" y="28" font-size="15">Draw North Arrow</text>
-<circle cx="625" cy="75" r="32" fill="none" stroke="#555" stroke-width="3"/>
-<text x="625" y="81" text-anchor="middle" font-size="18">N</text>
-<line x1="350" y1="260" x2="350" y2="105" stroke="#222" stroke-width="4"/>
-<circle cx="350" cy="260" r="7" fill="#222"/>
-<text x="365" y="265" font-size="17">Observer's Position</text>
-<text x="350" y="95" text-anchor="middle" font-size="17">Observation Point</text>
-<path d="M350 260 L120 325 L580 325 Z" fill="none" stroke="#222" stroke-width="3"/>
-<path d="M315 260 Q350 292 385 260" fill="none" stroke="#222" stroke-width="3"/>
-<text x="350" y="306" text-anchor="middle" font-size="17">40°</text>
-<text x="350" y="348" text-anchor="middle" font-size="16">Sun Location Line</text>
-<rect x="480" y="160" width="170" height="115" fill="none" stroke="#555" stroke-width="2"/>
-<line x1="510" y1="190" x2="620" y2="190" stroke="#222" stroke-width="4"/>
-<line x1="510" y1="230" x2="620" y2="230" stroke="#222" stroke-width="4"/>
-<rect x="505" y="178" width="10" height="65" fill="none" stroke="#222" stroke-width="3"/>
-<rect x="615" y="182" width="16" height="18" fill="none" stroke="#222" stroke-width="3"/>
-<text x="560" y="215" text-anchor="middle" font-size="15">FT</text>
-<text x="565" y="255" text-anchor="middle" font-size="15">FT</text>
-<text x="490" y="294" font-size="14">Stack with plume</text>
-<text x="570" y="294" font-size="14">☀ Sun   → Wind</text>
-</svg>
-</div>
-</div>
 </section>
 
-<section id="readings" class="hidden">
-<div class="card">
-<h2>Method 9 Observation Timer</h2>
-<div class="controls">
-<button class="primary" id="startBtn" onclick="startRun()">START 30-MINUTE RUN</button>
-<button class="secondary" onclick="pauseRun()">PAUSE</button>
-<button class="danger" onclick="finishRun()">FINISH TEST</button>
-<button class="danger" onclick="resetApp()">NEW TEST / RESET APP</button>
-</div>
+<section class="card">
+<h2>2. Test Controls</h2>
+<div class="mode" id="modeLabel">30-minute test • 120 observations</div>
 <div class="timer" id="timer">00:00:00</div>
-<div class="status" id="status">READY — TAP START OBSERVATION</div>
-<div class="progress"><div id="progress"></div></div>
-<p class="small" id="progressText">0 of 120 observations</p>
-<div class="notice">When running, the current 15-second observation cell turns <b>yellow</b>. A beep sounds at every 15-second observation point and the app automatically advances to the next point. Select opacity and tap <b>RECORD READING & NEXT</b>.</div>
+<div class="controls no-print">
+<button id="start" class="primary">START TEST</button>
+<button id="pause">PAUSE</button>
+<button id="finish" class="danger">FINISH TEST</button>
+<button id="reset" class="danger">NEW TEST / RESET APP</button>
 </div>
-
-<div class="card">
-<h2>Run Length</h2>
-<div class="controls">
-<button class="secondary" onclick="setDuration(30)">30 minutes / 120 readings</button>
-<button class="secondary" onclick="setDuration(60)">60 minutes / 240 readings</button>
-</div>
-<p class="small">Choose the run length before starting. The default is 30 minutes.</p>
-</div>
-
-<div class="card">
-<h2>Current Reading</h2>
-<div class="readingBox" id="currentBox">
-<div><b id="currentLabel">Observation 1 — 0:00</b></div>
-<div class="readingButtons" id="readingButtons"></div>
-<button class="primary" style="width:100%;margin-top:12px" onclick="recordReading()">RECORD READING & NEXT</button>
-</div>
-</div>
-
-<div class="card">
-<h2>15-Second Observation Sheet</h2>
-<div class="wrap"><table id="readingTable"></table></div>
-</div>
+<div id="status" class="status">READY — choose 30 or 60 minutes, then tap START TEST.</div>
 </section>
 
-<section id="results" class="hidden">
-<div class="card">
-<h2>Results</h2>
-<div id="resultText">Start a run and enter readings to calculate results.</div>
+<section class="card">
+<h2>3. Beginning & Ending Weather</h2>
+<p class="note">The app uses your phone's location and a live weather-data service to populate the field weather values. Capture beginning conditions before START and ending conditions when the test is finished. The capture time is saved with each set.</p>
+<div class="controls no-print">
+<button id="startWeather" class="primary">CAPTURE BEGINNING WEATHER</button>
+<button id="endWeather">CAPTURE ENDING WEATHER</button>
 </div>
+<div class="grid">
+<label>Beginning Weather Time<input id="startWeatherTime" readonly></label>
+<label>Ending Weather Time<input id="endWeatherTime" readonly></label>
+<label>Beginning Wind Speed<input id="startWindSpeed" readonly></label>
+<label>Ending Wind Speed<input id="endWindSpeed" readonly></label>
+<label>Beginning Wind Direction<input id="startWindDirection" readonly></label>
+<label>Ending Wind Direction<input id="endWindDirection" readonly></label>
+<label>Beginning Temperature<input id="startAmbient" readonly></label>
+<label>Ending Temperature<input id="endAmbient" readonly></label>
+<label>Beginning Relative Humidity<input id="startRH" readonly></label>
+<label>Ending Relative Humidity<input id="endRH" readonly></label>
+<label>Weather Latitude<input id="weatherLat" readonly></label>
+<label>Weather Longitude<input id="weatherLon" readonly></label>
+</div>
+<div id="weatherStatus" class="status">Weather not captured yet.</div>
 </section>
 
-<section id="report" class="hidden">
-<div class="card">
-<h2>Report</h2>
-<p>Use your browser's Print command to print/save this completed observation record.</p>
-<button class="primary" onclick="window.print()">PRINT / SAVE REPORT</button>
+<section class="card">
+<h2>4. Current Observation</h2>
+<div id="currentLabel" class="status warning">Not started</div>
+<p class="note">At every 15-second observation, the current cell turns yellow and an audible beep sounds. Select the opacity and tap RECORD READING if desired. The timer advances automatically.</p>
+<div class="choices no-print">
+<button data-val="0">0%</button><button data-val="5">5%</button><button data-val="10">10%</button><button data-val="15">15%</button>
+<button data-val="20">20%</button><button data-val="25">25%</button><button data-val="30">30%</button><button data-val="35">35%</button>
+<button data-val="40">40%</button><button data-val="45">45%</button><button data-val="50">50%</button><button data-val="55">55%</button>
+<button data-val="60">60%</button><button data-val="65">65%</button><button data-val="70">70%</button><button data-val="75">75%</button>
+<button data-val="80">80%</button><button data-val="85">85%</button><button data-val="90">90%</button><button data-val="95">95%</button>
+<button data-val="100">100%</button>
 </div>
+<div class="controls no-print"><button id="record" class="primary">RECORD READING</button></div>
 </section>
+
+<section class="card">
+<h2>5. Method 9 Observation Table</h2>
+<div class="reading-wrap"><table id="obsTable"></table></div>
+</section>
+
+<section class="card">
+<h2>6. Source Layout Sketch</h2>
+<p class="note">Draw the observer, emission point/stack, sun location line, north arrow, and wind direction. This sketch is saved with the test and prints with the report.</p>
+<canvas id="sketch" class="sketch"></canvas>
+<div class="controls no-print"><button id="clearSketch">CLEAR SKETCH</button></div>
+</section>
+
+<section class="card report">
+<h2>7. Report / Completion</h2>
+<div class="grid">
+<label>Observer Signature<input id="signature"></label>
+<label>Signature Date<input id="signatureDate" type="date"></label>
+<label>Certified By<input id="certifiedBy"></label>
+<label>Certification Date<input id="certDate" type="date"></label>
+</div>
+<div class="controls no-print" style="margin-top:10px">
+<button id="print" class="primary">PRINT / SAVE FIELD SHEET</button>
+</div>
+<p id="completion" class="status">Test not completed.</p>
+</section>
+
 </main>
 
+<section id="printSheet"></section>
 <script>
-(function(){
-"use strict";
+(() => {
+const $=id=>document.getElementById(id);
+let duration=30*60, running=false, paused=false, startPerf=0, elapsed=0, raf=null, current=-1, lastTick=-1, selected=null, finished=false;
+let rows=[];
 
-const KEY="method9_field_app_v3";
-let durationMin=30;
-let total=120;
-let readings=[];
-let current=0;
-let selected=null;
-let running=false;
-let paused=false;
-let startEpoch=0;
-let elapsedBefore=0;
-let lastSecond=-1;
-let timerId=null;
-let nextBeepAt=15;
+function setMode(mins){
+ duration=mins*60;
+ $('mode30').classList.toggle('primary',mins===30);
+ $('mode60').classList.toggle('primary',mins===60);
+ $('modeLabel').textContent=`${mins}-minute test • ${mins*4} observations`;
+ buildTable();
+ if(!running){elapsed=0;current=-1;updateTimer();$('status').textContent=`READY — ${mins}-minute test selected.`}
+}
+$('mode30').onclick=()=>{if(!running)setMode(30)}; $('mode60').onclick=()=>{if(!running)setMode(60)};
+
+function buildTable(){
+ const mins=duration/60;
+ let h='<thead><tr><th>MIN</th><th>0 sec</th><th>15 sec</th><th>30 sec</th><th>45 sec</th><th>COMMENTS</th></tr></thead><tbody>';
+ rows=[];
+ for(let m=1;m<=mins;m++){
+   h+=`<tr><th>${m}</th>`;
+   for(let q=0;q<4;q++){const idx=(m-1)*4+q;rows[idx]='';h+=`<td class="obs" id="c${idx}"><input inputmode="numeric" min="0" max="100" placeholder=""></td>`}
+   h+=`<td><input id="comment${m}" placeholder=""></td></tr>`;
+ }
+ $('obsTable').innerHTML=h+'</tbody>';
+ document.querySelectorAll('#obsTable td.obs input').forEach((inp,i)=>{
+   inp.addEventListener('input',()=>{let v=inp.value.replace(/[^0-9]/g,'');if(v!=='')v=Math.max(0,Math.min(100,Number(v)));inp.value=v;save();});
+ });
+}
+
+function updateTimer(){
+ let total=Math.max(0,Math.min(duration,elapsed));
+ let s=Math.floor(total), hh=Math.floor(s/3600), mm=Math.floor((s%3600)/60), ss=s%60;
+ $('timer').textContent=[hh,mm,ss].map(x=>String(x).padStart(2,'0')).join(':');
+}
+
+function beep(){
+ try{
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended') audioCtx.resume();
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type='sine'; o.frequency.value=880; g.gain.setValueAtTime(.0001,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.22,audioCtx.currentTime+.01);
+  g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.18);
+  o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.19);
+ }catch(e){}
+}
 let audioCtx=null;
 
-const $=id=>document.getElementById(id);
-
-function save(){
-  const data={durationMin,total,readings,current,running:false,paused:false,elapsedBefore,form:{}};
-  document.querySelectorAll("#form input,#form textarea").forEach(e=>data.form[e.id]=e.value);
-  localStorage.setItem(KEY,JSON.stringify(data));
-}
-function load(){
-  try{
-    const d=JSON.parse(localStorage.getItem(KEY)||"null");
-    if(!d)return;
-    durationMin=d.durationMin||30; total=d.total||durationMin*4;
-    readings=Array.isArray(d.readings)?d.readings:[];
-    current=Math.min(d.current||0,total-1);
-    elapsedBefore=d.elapsedBefore||0;
-    if(d.form)Object.entries(d.form).forEach(([k,v])=>{if($(k))$(k).value=v});
-  }catch(e){}
-}
-function fmt(sec){
-  sec=Math.max(0,Math.floor(sec));
-  const h=String(Math.floor(sec/3600)).padStart(2,"0");
-  const m=String(Math.floor(sec%3600/60)).padStart(2,"0");
-  const s=String(sec%60).padStart(2,"0");
-  return h+":"+m+":"+s;
-}
-function elapsed(){
-  return elapsedBefore+(running?((Date.now()-startEpoch)/1000):0);
-}
-function unlockAudio(){
-  try{
-    if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    if(audioCtx.state==="suspended")audioCtx.resume();
-  }catch(e){}
-}
-function beep(){
-  try{
-    unlockAudio();
-    if(!audioCtx)return;
-    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
-    o.frequency.value=880;o.type="sine";
-    g.gain.setValueAtTime(.0001,audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(.22,audioCtx.currentTime+.01);
-    g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.16);
-    o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.18);
-    if(navigator.vibrate)navigator.vibrate(80);
-  }catch(e){}
-}
-window.setDuration=function(min){
-  if(running)return alert("Pause or finish the current run before changing run length.");
-  durationMin=min;total=min*4;readings=[];current=0;selected=null;elapsedBefore=0;
-  $("startBtn").textContent="START "+min+"-MINUTE RUN";
-  buildTable();updateUI();save();
-};
-function buildTable(){
-  let html="<thead><tr><th>MIN</th><th>0 sec</th><th>15 sec</th><th>30 sec</th><th>45 sec</th></tr></thead><tbody>";
-  for(let m=1;m<=durationMin;m++){
-    html+="<tr><th>"+m+"</th>";
-    for(let q=0;q<4;q++){
-      const idx=(m-1)*4+q;
-      const val=readings[idx]==null?"":readings[idx];
-      html+='<td id="cell-'+idx+'" class="'+(idx===current?"activeCell":"")+'"><input inputmode="numeric" min="0" max="100" type="number" value="'+val+'" aria-label="Minute '+m+' '+q*15+' second reading" onchange="manualReading('+idx+',this.value)"></td>';
-    }
-    html+="</tr>";
-  }
-  html+="</tbody>";
-  $("readingTable").innerHTML=html;
-}
-window.manualReading=function(idx,v){
-  if(v===""){readings[idx]=null}
-  else{
-    let n=Number(v); if(!Number.isFinite(n))return;
-    n=Math.max(0,Math.min(100,Math.round(n/5)*5)); readings[idx]=n;
-  }
-  save();updateResults();
-};
-function buildButtons(){
-  let h="";
-  for(let n=0;n<=100;n+=5)h+='<button onclick="chooseReading('+n+')" id="rbtn-'+n+'">'+n+'%</button>';
-  $("readingButtons").innerHTML=h;
-}
-window.chooseReading=function(n){
-  selected=n;
-  document.querySelectorAll("#readingButtons button").forEach(b=>b.classList.remove("selected"));
-  $("rbtn-"+n).classList.add("selected");
-};
-window.recordReading=function(){
-  if(!running&&!paused)return alert("Start the observation first.");
-  if(selected===null)return alert("Select an opacity reading first.");
-  readings[current]=selected;
-  selected=null;
-  current++;
-  if(current>=total){current=total-1;finishRun();return;}
-  buildTable();updateUI();save();
-};
-function updateUI(){
-  $("timer").textContent=fmt(elapsed());
-  const idx=current;
-  const minute=Math.floor(idx/4)+1, sec=(idx%4)*15;
-  $("currentLabel").textContent="Observation "+(idx+1)+" — minute "+minute+", "+sec+" sec";
-  $("progress").style.width=((Math.min(current,total)/total)*100)+"%";
-  $("progressText").textContent=Math.min(current,total)+" of "+total+" observations";
-  document.querySelectorAll("#readingTable td").forEach(x=>x.classList.remove("activeCell"));
-  const c=$("cell-"+current);if(c)c.classList.add("activeCell");
-  if(running){
-    $("status").textContent="RUNNING — Observation "+(current+1)+" of "+total+" • yellow highlight active";
-    $("status").classList.add("running");
-  }else if(paused){
-    $("status").textContent="PAUSED — Observation "+(current+1)+" of "+total;
-    $("status").classList.remove("running");
-  }else{
-    $("status").textContent=current===0?"READY — TAP START OBSERVATION":"STOPPED — TAP START TO CONTINUE";
-    $("status").classList.remove("running");
-  }
-  updateResults();
+function activate(i,doBeep=true){
+ if(i<0||i>=duration*4)return;
+ document.querySelectorAll('td.obs.current').forEach(x=>x.classList.remove('current'));
+ const cell=$('c'+i); if(cell) cell.classList.add('current');
+ current=i;
+ const min=Math.floor(i/4)+1, sec=[0,15,30,45][i%4];
+ $('currentLabel').textContent=`READING ${i+1} OF ${duration*4} — MINUTE ${min}, ${sec} SECONDS`;
+ $('status').textContent=`RUNNING — Minute ${min}, ${sec}-second observation. Yellow cell is the current reading.`;
+ if(doBeep) beep();
 }
 function tick(){
-  if(!running)return;
-  const e=elapsed();
-  $("timer").textContent=fmt(e);
-  const whole=Math.floor(e);
-  if(whole!==lastSecond){
-    lastSecond=whole;
-    while(nextBeepAt<=whole && nextBeepAt<durationMin*60+1){
-      beep();
-      // The timer itself advances on the exact 15-second boundary.
-      const expected=Math.min(total-1,Math.floor(nextBeepAt/15));
-      if(expected>current && current<total-1){
-        current=expected;
-        selected=null;
-        buildTable();
-        updateUI();
-      }
-      nextBeepAt+=15;
+ if(!running)return;
+ elapsed=(performance.now()-startPerf)/1000;
+ if(elapsed>=duration){elapsed=duration;updateTimer();finish(true);return;}
+ updateTimer();
+ const idx=Math.floor(elapsed/15);
+ if(idx!==lastTick){lastTick=idx;activate(idx,true)}
+ raf=requestAnimationFrame(tick);
+}
+function start(){
+ if(finished)return;
+ if(!running){
+   if(!paused){elapsed=0;lastTick=-1}
+   startPerf=performance.now()-elapsed*1000;
+   running=true;paused=false;
+   beep(); // primes audio from user gesture
+   tick();
+   // Capture beginning weather without blocking the observation timer.
+   if(!$('startWeatherTime').value) captureWeather('start');
+ }
+}
+function pause(){
+ if(!running)return;
+ elapsed=(performance.now()-startPerf)/1000; running=false;paused=true;cancelAnimationFrame(raf);updateTimer();
+ $('status').textContent='PAUSED — tap START TEST to resume.';
+}
+function finish(auto=false){
+ if(!running && !paused && !auto)return;
+ if(running)elapsed=(performance.now()-startPerf)/1000;
+ running=false;paused=false;cancelAnimationFrame(raf);
+ elapsed=Math.min(duration,Math.max(0,elapsed));updateTimer();
+ finished=true;
+ $('status').textContent=auto?'TEST COMPLETE — 60/30-minute run finished.':'TEST FINISHED.';
+ $('status').className='status success';
+ $('completion').textContent=`Completed ${Math.floor(elapsed/60)}:${String(Math.floor(elapsed%60)).padStart(2,'0')} of ${duration/60}:00.`;
+ save();
+}
+function record(){
+ if(current<0){$('status').textContent='Start the test first.';return}
+ if(selected!==null){const inp=$('c'+current)?.querySelector('input'); if(inp){inp.value=selected;rows[current]=selected;inp.dispatchEvent(new Event('change'));}selected=null}
+ save();
+}
+document.querySelectorAll('.choices button').forEach(b=>b.onclick=()=>{selected=Number(b.dataset.val);document.querySelectorAll('.choices button').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
+$('record').onclick=record;$('start').onclick=start;$('pause').onclick=pause;$('finish').onclick=()=>finish(false);
+
+function resetApp(){
+ if(!confirm('Start a NEW TEST? All current test data and readings will be permanently cleared.'))return;
+ localStorage.removeItem('method9FieldApp');
+ location.reload();
+}
+$('reset').onclick=resetApp;
+
+
+async function getWeather(){
+  if(!navigator.geolocation) throw new Error("This iPhone/browser does not provide location services.");
+  const pos=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:15000,maximumAge:60000}));
+  const lat=pos.coords.latitude, lon=pos.coords.longitude;
+  const url=`https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
+  const res=await fetch(url,{cache:"no-store"});
+  if(!res.ok) throw new Error("Weather service unavailable.");
+  const data=await res.json();
+  const c=data.current;
+  return {
+    time:new Date().toLocaleString(),
+    lat:lat.toFixed(5), lon:lon.toFixed(5),
+    windSpeed:`${c.wind_speed_10m} mph`,
+    windDirection:`${c.wind_direction_10m}°`,
+    ambient:`${c.temperature_2m} °F`,
+    rh:`${c.relative_humidity_2m} %`
+  };
+}
+async function captureWeather(which){
+  const btn=$(which==="start"?"startWeather":"endWeather");
+  const old=btn.textContent; btn.disabled=true; btn.textContent="CAPTURING…";
+  $("weatherStatus").textContent="Getting your location and current weather…";
+  try{
+    const w=await getWeather();
+    if(which==="start"){
+      $("startWeatherTime").value=w.time;
+      $("startWindSpeed").value=w.windSpeed;
+      $("startWindDirection").value=w.windDirection;
+      $("startAmbient").value=w.ambient;
+      $("startRH").value=w.rh;
+      $("weatherLat").value=w.lat; $("weatherLon").value=w.lon;
+      // Keep the main form's weather fields synchronized with beginning conditions.
+      $("windSpeed").value=w.windSpeed; $("windDirection").value=w.windDirection;
+      $("ambient").value=w.ambient; $("rh").value=w.rh;
+      $("weatherStatus").textContent="Beginning weather captured successfully.";
+    }else{
+      $("endWeatherTime").value=w.time;
+      $("endWindSpeed").value=w.windSpeed;
+      $("endWindDirection").value=w.windDirection;
+      $("endAmbient").value=w.ambient;
+      $("endRH").value=w.rh;
+      $("weatherLat").value=w.lat; $("weatherLon").value=w.lon;
+      $("weatherStatus").textContent="Ending weather captured successfully.";
     }
-  }
-  if(e>=durationMin*60){finishRun();return;}
-  timerId=requestAnimationFrame(tick);
+    save();
+  }catch(e){
+    $("weatherStatus").textContent="Weather capture failed: "+(e.message||"Allow Location Services and try again.");
+  }finally{btn.disabled=false;btn.textContent=old}
 }
-window.startRun=function(){
-  unlockAudio();
-  if(running)return;
-  if(current>=total-1 && readings.length>=total){alert("This run is complete. Tap NEW TEST / RESET APP for a new run.");return;}
-  running=true;paused=false;
-  startEpoch=Date.now();
-  // Beep immediately confirms that the Start button is working.
-  beep();
-  const e=elapsed();
-  nextBeepAt=Math.floor(e/15)*15+15;
-  lastSecond=Math.floor(e);
-  updateUI();
-  cancelAnimationFrame(timerId);
-  timerId=requestAnimationFrame(tick);
-  save();
-};
-window.pauseRun=function(){
-  if(!running)return;
-  elapsedBefore+=((Date.now()-startEpoch)/1000);
-  running=false;paused=true;
-  cancelAnimationFrame(timerId);
-  updateUI();save();
-};
-window.finishRun=function(){
-  if(running)elapsedBefore+=((Date.now()-startEpoch)/1000);
-  running=false;paused=false;
-  cancelAnimationFrame(timerId);
-  if($("startTime") && !$("startTime").value){
-    const d=new Date();$("startTime").value=d.toTimeString().slice(0,5);
-  }
-  $("status").textContent="TEST FINISHED — "+readings.filter(x=>x!=null).length+" readings entered";
-  $("status").classList.remove("running");
-  updateUI();save();
-};
-window.resetApp=function(){
-  if(!confirm("Start a NEW TEST? All current readings and entered form data will be permanently cleared from this device."))return;
-  cancelAnimationFrame(timerId);
-  localStorage.removeItem(KEY);
-  durationMin=30;total=120;readings=[];current=0;selected=null;running=false;paused=false;elapsedBefore=0;nextBeepAt=15;
-  document.querySelectorAll("#form input,#form textarea").forEach(e=>e.value="");
-  $("date").value=new Date().toISOString().slice(0,10);
-  $("startBtn").textContent="START 30-MINUTE RUN";
-  buildTable();updateUI();
-};
-function updateResults(){
-  const vals=readings.filter(v=>Number.isFinite(v));
-  if(!vals.length){$("resultText").textContent="No readings entered yet.";return;}
-  const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
-  $("resultText").innerHTML="<b>Readings entered:</b> "+vals.length+" of "+total+
-    "<br><b>Average opacity:</b> "+avg.toFixed(2)+"%"+
-    "<br><b>Highest opacity:</b> "+Math.max(...vals)+"%";
+$("startWeather").onclick=()=>captureWeather("start");
+$("endWeather").onclick=()=>captureWeather("end");
+
+function save(){
+ const data={duration,elapsed,finished};
+ document.querySelectorAll('input,textarea,select').forEach(x=>{if(x.id)data[x.id]=x.value});
+ try{data.sketch=$('sketch').toDataURL('image/png');localStorage.setItem('method9FieldApp',JSON.stringify(data))}catch(e){}
 }
-window.showTab=function(id,btn){
-  ["form","readings","results","report"].forEach(x=>$(x).classList.toggle("hidden",x!==id));
-  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
-  if(btn)btn.classList.add("active");
-};
-document.addEventListener("visibilitychange",()=>{if(running)updateUI()});
-$("date").value=new Date().toISOString().slice(0,10);
-load();buildButtons();buildTable();updateUI();
+function load(){
+ try{
+  const d=JSON.parse(localStorage.getItem('method9FieldApp')||'null'); if(!d)return;
+  duration=d.duration||1800; setMode(duration/60);
+  Object.entries(d).forEach(([k,v])=>{const x=$(k);if(x&&k!=='sketch')x.value=v});
+  elapsed=Number(d.elapsed)||0;finished=!!d.finished;updateTimer();
+  if(d.sketch){const im=new Image();im.onload=()=>ctx.drawImage(im,0,0,canvas.width,canvas.height);im.src=d.sketch}
+ }catch(e){}
+}
+
+const canvas=$('sketch'),ctx=canvas.getContext('2d');let drawing=false;
+function resizeCanvas(){const r=canvas.getBoundingClientRect(),d=devicePixelRatio||1;canvas.width=r.width*d;canvas.height=r.height*d;ctx.scale(d,d);ctx.lineWidth=3;ctx.lineCap='round';ctx.strokeStyle='#16344d'}
+resizeCanvas();window.addEventListener('resize',resizeCanvas);
+function pos(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+canvas.addEventListener('pointerdown',e=>{drawing=true;canvas.setPointerCapture(e.pointerId);const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y)});
+canvas.addEventListener('pointermove',e=>{if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();save()});
+canvas.addEventListener('pointerup',()=>drawing=false);
+$('clearSketch').onclick=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);save()};
+
+
+function val(id){
+  const x=$(id);
+  return x ? (x.value || '') : '';
+}
+function sketchData(){
+  try{return $('sketch').toDataURL('image/png')}catch(e){return ''}
+}
+function field(label,id,full=false){
+  return `<div class="field${full?' full':''}"><span class="lab">${label}</span><span class="val">${esc(val(id))}</span></div>`;
+}
+function esc(s){
+  return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function buildPrintPage(startRow, endRow, pageNo, totalPages){
+  const img=sketchData();
+  let left = `
+    <div class="print-left">
+      <div class="print-title">EPA METHOD 9 (40 CFR 60 - Appendix A)</div>
+      <div class="print-subtitle">VISIBLE EMISSION OBSERVATION FORM 1</div>
+      <div class="box">
+        <div class="box-title">SOURCE / OBSERVATION INFORMATION</div>
+        <div class="field-grid">
+          ${field('COMPANY NAME','company',true)}
+          ${field('OBSERVATION DATE','date')}
+          ${field('LOCATION / STREET','location',true)}
+          ${field('CITY / STATE / ZIP','city',true)}
+          ${field('PROCESS EQUIPMENT','process')}
+          ${field('OPERATING MODE','processMode')}
+          ${field('CONTROL EQUIPMENT','control')}
+          ${field('OPERATING MODE','controlMode')}
+          ${field('DESCRIBE EMISSION POINT','emissionPoint',true)}
+          ${field('HEIGHT OF EMISSION PT.','stackHeight')}
+          ${field('HEIGHT RELATIVE TO OBSERVER','relativeHeight')}
+          ${field('DISTANCE TO EMISSION PT.','distance')}
+          ${field('DIRECTION TO EMISSION PT. (DEGREES)','direction')}
+          ${field('VERTICAL ANGLE TO OBS. PT.','verticalAngle')}
+          ${field('DIRECTION TO OBS. PT. (DEGREES)','obsDirection')}
+          ${field('EMISSION COLOR','emissionColor')}
+          ${field('WATER DROPLET PLUME','waterPlume')}
+          ${field('DESCRIBE PLUME BACKGROUND','plumeBackground',true)}
+          ${field('BACKGROUND COLOR','backgroundColor')}
+          ${field('SKY CONDITIONS','sky')}
+          ${field('WIND SPEED','windSpeed')}
+          ${field('WIND DIRECTION','windDirection')}
+          ${field('AMBIENT TEMP','ambient')}
+          ${field('WET BULB TEMP','wetBulb')}
+          ${field('RH PERCENT','rh')}
+        </div>
+      </div>
+      <div class="box">
+        <div class="box-title">FIELD WEATHER — BEGINNING / ENDING CONDITIONS</div>
+        <div class="field-grid">
+          ${field('BEGINNING TIME','startWeatherTime')}
+          ${field('ENDING TIME','endWeatherTime')}
+          ${field('BEGINNING WIND SPEED','startWindSpeed')}
+          ${field('ENDING WIND SPEED','endWindSpeed')}
+          ${field('BEGINNING WIND DIRECTION','startWindDirection')}
+          ${field('ENDING WIND DIRECTION','endWindDirection')}
+          ${field('BEGINNING AMBIENT TEMP','startAmbient')}
+          ${field('ENDING AMBIENT TEMP','endAmbient')}
+          ${field('BEGINNING RH','startRH')}
+          ${field('ENDING RH','endRH')}
+          ${field('WEATHER LATITUDE','weatherLat')}
+          ${field('WEATHER LONGITUDE','weatherLon')}
+        </div>
+      </div>
+      <div class="box">
+        <div class="box-title">SOURCE LAYOUT SKETCH</div>
+        <div class="sketch-print">${img?`<img class="sketch-img" src="${img}">`:`<div class="sketch-placeholder">Source Layout Sketch</div>`}</div>
+      </div>
+      <div class="box additional"><div class="box-title">ADDITIONAL INFORMATION</div></div>
+    </div>`;
+
+  let right = `
+    <div class="print-right">
+      <div class="print-right-head">
+        <div class="rh"><b>FORM NUMBER</b>VEO Form 1</div>
+        <div class="rh"><b>TEST</b>${duration/60}-MINUTE</div>
+        <div class="rh"><b>PAGE</b>${pageNo} OF ${totalPages}</div>
+      </div>
+      <div class="print-right-head">
+        <div class="rh"><b>OBSERVATION DATE</b>${esc(val('date'))}</div>
+        <div class="rh"><b>START TIME</b>${esc(val('startTime')||'')}</div>
+        <div class="rh"><b>END TIME</b>${esc(val('endTime')||'')}</div>
+      </div>
+      <table class="obs-print">
+        <thead><tr><th class="min">MIN</th><th class="sec">0</th><th class="sec">15</th><th class="sec">30</th><th class="sec">45</th><th class="comments">COMMENTS</th></tr></thead>
+        <tbody>`;
+
+  const maxRows=Math.min(endRow, duration/60);
+  for(let m=startRow;m<=maxRows;m++){
+    right += `<tr><th>${m}</th>`;
+    for(let q=0;q<4;q++){
+      const idx=(m-1)*4+q;
+      const inp=$(`c${idx}`)?.querySelector('input');
+      right += `<td class="reading">${esc(inp?.value||'')}</td>`;
+    }
+    right += `<td>${esc(val('comment'+m))}</td></tr>`;
+  }
+  right += `</tbody></table>
+      <div class="print-right-foot">
+        <div class="sig-grid">
+          <div class="sig"><span class="lab">OBSERVER'S NAME (PRINT)</span><br>${esc(val('observer'))}</div>
+          <div class="sig"><span class="lab">ORGANIZATION</span><br>${esc(val('organization'))}</div>
+          <div class="sig"><span class="lab">OBSERVER'S SIGNATURE</span><br>${esc(val('signature'))}</div>
+          <div class="sig"><span class="lab">DATE</span><br>${esc(val('signatureDate'))}</div>
+          <div class="sig"><span class="lab">CERTIFIED BY</span><br>${esc(val('certifiedBy'))}</div>
+          <div class="sig"><span class="lab">DATE</span><br>${esc(val('certDate'))}</div>
+        </div>
+      </div>
+    </div>`;
+  return `<div class="print-page">${left}${right}</div>`;
+}
+function renderPrintSheet(){
+  const totalMinutes=duration/60;
+  const pages=[];
+  if(totalMinutes<=30){
+    pages.push(buildPrintPage(1,totalMinutes,1,1));
+  }else{
+    pages.push(buildPrintPage(1,30,1,2));
+    pages.push(buildPrintPage(31,60,2,2));
+  }
+  $('printSheet').innerHTML=pages.join('');
+}
+
+$('print').onclick=()=>{save();renderPrintSheet();window.print()};
+$('date').value=new Date().toISOString().slice(0,10);$('signatureDate').value=$('date').value;
+$('certDate').value=$('date').value;
+buildTable();load();renderPrintSheet();
 })();
 </script>
 </body>
