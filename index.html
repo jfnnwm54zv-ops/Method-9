@@ -447,7 +447,7 @@ let RUN_MINUTES=30, OBS_COUNT=120, ROW_COUNT=30;
 let readings=Array(OBS_COUNT).fill(null), comments=Array(ROW_COUNT).fill(''), quickValue=null;
 let timerHandle=null, seconds=0;
 let testTimer=null, testRunning=false, testPaused=false, testStartMs=0, testElapsedSec=0;
-let activeObservationIndex=-1, lastCueIndex=-1, audioCtx=null;
+let activeObservationIndex=-1, lastCueIndex=-1, audioCtx=null, observationAdvanceTimer=null;
 let stopwatchHandle=null, stopwatchRunning=false, stopwatchElapsedSec=0, weatherData=null;
 let weatherSnapshots={start:null,end:null}, sunSnapshots={start:null,end:null};
 
@@ -846,67 +846,94 @@ function recordQuick(){
 }
 function ensureAudio(){
   try{
-    if(!audioCtx){
-      const AC=window.AudioContext||window.webkitAudioContext;
-      if(!AC) return false;
-      audioCtx=new AC();
-    }
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return false;
+    if(!audioCtx) audioCtx=new AC();
     if(audioCtx.state==='suspended') audioCtx.resume().catch(()=>{});
     return true;
   }catch(e){ return false; }
 }
 function beepObservation(){
   try{
-    if(!ensureAudio()) return;
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return;
+    if(!audioCtx) audioCtx=new AC();
     const play=()=>{
       const now=audioCtx.currentTime;
-    const osc=audioCtx.createOscillator();
-    const gain=audioCtx.createGain();
-    osc.type='sine'; osc.frequency.setValueAtTime(880,now);
-    osc.frequency.exponentialRampToValueAtTime(660,now+0.12);
-    gain.gain.setValueAtTime(0.0001,now);
-    gain.gain.exponentialRampToValueAtTime(0.18,now+0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001,now+0.18);
+      const osc=audioCtx.createOscillator();
+      const gain=audioCtx.createGain();
+      osc.type='sine';
+      osc.frequency.setValueAtTime(880,now);
+      gain.gain.setValueAtTime(0.0001,now);
+      gain.gain.exponentialRampToValueAtTime(0.35,now+0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001,now+0.20);
       osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(now); osc.stop(now+0.2);
+      osc.start(now); osc.stop(now+0.22);
     };
-    if(audioCtx.state==='running') play(); else audioCtx.resume().then(play).catch(()=>{});
+    if(audioCtx.state==='suspended') audioCtx.resume().then(play).catch(()=>{}); else play();
   }catch(e){}
 }
-function updateObservationCue(force=false){
+function highlightObservation(index, shouldBeep=true){
+  if(!testRunning || testPaused) return;
+  activeObservationIndex=Math.max(0,Math.min(index,OBS_COUNT-1));
+  const cells=document.querySelectorAll('#obsTable td.obs-cell');
+  cells.forEach(td=>{
+    const on=Number(td.dataset.cellI)===activeObservationIndex;
+    td.classList.toggle('current-observation',on);
+    const input=td.querySelector('input');
+    if(input) input.classList.toggle('current-observation-input',on);
+  });
+  const active=document.querySelector(`#obsTable td.obs-cell[data-cell-i="${activeObservationIndex}"]`);
+  if(active){
+    active.style.backgroundColor='#fff200';
+    active.style.boxShadow='inset 0 0 0 4px #d6b900';
+    try{active.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'});}catch(e){}
+  }
+  const minute=Math.floor(activeObservationIndex/4)+1;
+  const sec=(activeObservationIndex%4)*15;
   const cue=$('observationCue');
-  if(!cue) return;
+  if(cue){cue.className='status ok';cue.textContent=`OBSERVATION ${activeObservationIndex+1} OF ${OBS_COUNT} — MIN ${minute}, ${sec} SEC — RECORD NOW`;}
+  if($('fieldReading')) $('fieldReading').textContent=`${activeObservationIndex+1} / ${OBS_COUNT}`;
+  if(shouldBeep) beepObservation();
+}
+function clearObservationHighlight(){
+  document.querySelectorAll('#obsTable td.obs-cell').forEach(td=>{
+    td.classList.remove('current-observation');
+    td.style.backgroundColor=''; td.style.boxShadow='';
+    const input=td.querySelector('input'); if(input) input.classList.remove('current-observation-input');
+  });
+}
+function scheduleObservationAdvance(){
+  clearInterval(observationAdvanceTimer);
+  observationAdvanceTimer=setInterval(()=>{
+    if(!testRunning || testPaused) return;
+    const elapsed=Math.floor((Date.now()-testStartMs)/1000);
+    const target=Math.min(OBS_COUNT-1,Math.floor(elapsed/15));
+    if(target!==activeObservationIndex) highlightObservation(target,true);
+  },200);
+}
+function updateObservationCue(force=false){
   if(!testRunning){
-    cue.className='status warn';
-    cue.textContent=readings.some(x=>x!=null)?'RUN NOT ACTIVE — LAST READING REMAINS HIGHLIGHTED':'READY — START THE RUN';
+    const cue=$('observationCue');
+    if(cue){cue.className='status warn';cue.textContent=readings.some(x=>x!=null)?'RUN NOT ACTIVE — LAST READING REMAINS HIGHLIGHTED':'READY — START THE RUN';}
     return;
   }
-  const elapsed=Math.max(0,testPaused?testElapsedSec:Math.floor((Date.now()-testStartMs)/1000));
-  const idx=Math.min(OBS_COUNT-1,Math.floor(elapsed/15));
-  activeObservationIndex=idx;
-  document.querySelectorAll('#obsTable td.obs-cell').forEach(td=>{const on=Number(td.dataset.cellI)===idx; td.classList.toggle('current-observation',on); if(on && force){td.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'});}});
-  const minute=Math.floor(idx/4)+1, sec=(idx%4)*15;
-  cue.className='status ok';
-  cue.textContent=`OBSERVATION ${idx+1} OF ${OBS_COUNT} — MIN ${minute}, ${sec} SEC — RECORD NOW`;
-  if(testRunning && !testPaused && (force || idx!==lastCueIndex)){
-    if(force || idx>lastCueIndex){
-      beepObservation();
-      lastCueIndex=idx;
-    }
-  }
+  if(testPaused) return;
+  if(force || activeObservationIndex<0) highlightObservation(Math.max(0,activeObservationIndex),false);
 }
 function clearObservationCue(){
   activeObservationIndex=-1;
-  document.querySelectorAll('#obsTable td.obs-cell').forEach(td=>td.classList.remove('current-observation'));
+  clearObservationHighlight();
 }
 
-async function startOneHourTest(){
-  if(testRunning){return}
+function startOneHourTest(){
+  if(testRunning) return;
+  if(readings.some(x=>x!=null) && !confirm(`Start a new ${RUN_MINUTES}-minute run and clear the current readings?`)) return;
+
+  // IMPORTANT: audio must be initialized directly inside the user tap on iPhone Safari.
   ensureAudio();
-  // iOS Safari requires audio initialization from the START tap. Prime the audio and beep immediately.
   beepObservation();
-  const runLabel=`${RUN_MINUTES}-minute`;
-  if(readings.some(x=>x!=null) && !confirm(`Start a new ${runLabel} run and clear the current readings?`)) return;
+
   readings=Array(OBS_COUNT).fill(null);
   comments=Array(ROW_COUNT).fill('');
   quickValue=null;
@@ -915,43 +942,36 @@ async function startOneHourTest(){
   testStartMs=Date.now();
   testElapsedSec=0;
   activeObservationIndex=0;
-  lastCueIndex=-1;
-  $('startTestBtn').disabled=true;
-  $('testStatus').textContent='STARTING — CAPTURING FIELD CONDITIONS';
-  $('testStatus').style.color='#a15c00';
-  $('testNotice').textContent='Capturing START GPS/weather, wind direction, sun position/check, distance and bearing. The timed observation will begin after the automatic capture attempts finish.';
-  render();
-  updateObservationCue(true);
-  updateTestClock();
-  save();
-  autoSave();
-  try{
-    await autoCaptureWeather('start');
-  }catch(e){}
-  try{
-    await autoCaptureSun('start');
-  }catch(e){}
+  lastCueIndex=0;
+  clearInterval(observationAdvanceTimer);
+  if($('startTestBtn')) $('startTestBtn').disabled=true;
   $('testStatus').textContent='RUNNING';
   $('testStatus').style.color='#16803c';
-  $('testNotice').textContent=`START conditions captured/attempted. Enter one opacity observation every 15 seconds. This run contains exactly ${RUN_MINUTES} minutes / ${OBS_COUNT} observations.`;
-  clearInterval(testTimer);
-  testTimer=setInterval(updateTestClock,100);
+  $('testNotice').textContent=`RUNNING — yellow highlight and audible beep advance every 15 seconds. ${OBS_COUNT} observations total.`;
+
   render();
-  updateObservationCue(false);
-  save();
-  autoSave();
+  // render() rebuilt the table, so apply the first yellow highlight to the new cells.
+  highlightObservation(0,false);
+  scheduleObservationAdvance();
   updateTestClock();
+  save(); autoSave();
+
+  // Field capture is deliberately backgrounded so it cannot interfere with the timing/audio system.
+  autoCaptureWeather('start').catch(()=>{});
+  autoCaptureSun('start').catch(()=>{});
 }
 function pauseOneHourTest(){
   if(!testRunning)return;
   testPaused=!testPaused;
   if(testPaused){
     testElapsedSec=Math.floor((Date.now()-testStartMs)/1000);
+    clearTimeout(observationAdvanceTimer);
     $('testStatus').textContent='PAUSED';
     $('testStatus').style.color='#a15c00';
     $('testNotice').textContent='Test paused. Resume when ready; the elapsed test time is held.';
   }else{
     testStartMs=Date.now()-testElapsedSec*1000;
+    scheduleObservationAdvance();
     $('testStatus').textContent='RUNNING';
     $('testStatus').style.color='#16803c';
     $('testNotice').textContent='Test resumed.';
@@ -963,6 +983,7 @@ async function finishOneHourTest(){
   testRunning=false;
   testPaused=false;
   clearInterval(testTimer); testTimer=null;
+  clearTimeout(observationAdvanceTimer); observationAdvanceTimer=null;
   clearObservationCue();
   if(testStartMs && !testElapsedSec)testElapsedSec=Math.floor((Date.now()-testStartMs)/1000);
   $('testStatus').textContent='FINISHING — CAPTURING END CONDITIONS';
