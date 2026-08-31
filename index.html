@@ -38,6 +38,8 @@ button{border:0;border-radius:10px;padding:11px 13px;font-weight:800;font-size:1
 .obs-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px}
 table{border-collapse:collapse;width:100%;min-width:610px;background:white}
 th,td{border:1px solid var(--line);padding:5px;text-align:center;font-size:13px}
+.obs-cell{transition:background-color .12s,box-shadow .12s}.obs-cell.current-observation{background:#fff200 !important;box-shadow:inset 0 0 0 3px #d6b900;position:relative}.obs-cell.current-observation input{background:#fffbd0;font-weight:900}.obs-cell.current-observation::after{content:"NOW";display:block;font-size:9px;font-weight:900;color:#5b4b00;margin-top:2px}
+
 th{background:#edf3f8;position:sticky;top:0;z-index:2}
 td input{margin:0;padding:7px;min-width:64px;text-align:center}
 td.time{font-weight:800;white-space:nowrap;background:#f7fafc}
@@ -116,7 +118,7 @@ svg{width:100%;height:260px;border:1px dashed #b9c6d3;border-radius:10px;backgro
       <div><b>OBSERVATION TYPE</b><br>Method 9</div>
     </div>
   </div>
-  <div class="form1-note"><b>FIELD ENTRY:</b> Complete the sections below to mirror the supplied VEOF1.1 paper form. Use the <b>READINGS</b> tab for 15-second opacity observations and the 30-minute run recorder.</div>
+  <div class="form1-note"><b>FIELD ENTRY:</b> Complete the sections below to mirror the supplied VEOF1.1 paper form. Use the <b>READINGS</b> tab for 15-second opacity observations and the 30- or 60-minute run recorder.</div>
   <div class="card">
     <h2>EPA Visible Emission Observation Form 1 — Facility Information</h2>
     <div class="grid">
@@ -136,7 +138,7 @@ svg{width:100%;height:260px;border:1px dashed #b9c6d3;border-radius:10px;backgro
       <label>Method / form year<select id="formVersion"><option>Method 9</option><option>Method 9 — 2024</option><option>Other</option></select></label>
       <label>Applicable opacity limit (%)<input id="limit" type="number" min="0" max="100" step="1" placeholder="e.g. 20"></label>
       <label>Applicable averaging time (minutes)<input id="avgMinutes" type="number" min="0.25" step="0.25" value="6"></label>
-      <label>Run duration (minutes)<input id="duration" type="number" min="30" max="30" step="30" value="30" readonly></label>
+      <label>Run duration<select id="duration"><option value="30">30 minutes</option><option value="60">60 minutes</option></select></label>
     </div>
   </div>
 
@@ -344,10 +346,10 @@ svg{width:100%;height:260px;border:1px dashed #b9c6d3;border-radius:10px;backgro
 <section id="readings">
   <div class="card no-print" style="border:2px solid var(--blue);background:#f7fbff">
     <div style="font-weight:900;color:var(--dark)">EPA VISIBLE EMISSION OBSERVATION FORM 1 — READINGS</div>
-    <div class="small">The table exactly matches the paper form: 30 minute rows with 0, 15, 30, and 45-second observations — 120 positions per run.</div>
+    <div class="small">The table matches the paper form: each 30-minute block has 30 rows with 0, 15, 30, and 45-second observations. Choose a 30- or 60-minute run; a 60-minute run contains two 30-minute blocks (240 observations).</div>
   </div>
   <div class="card">
-    <h2>7. 30-Minute Method 9 Field Recorder</h2>
+    <h2>7. Method 9 Field Recorder — 30 or 60 Minutes</h2>
     <div class="card" style="background:#f7fbff;border:2px solid #0b5cab;text-align:center">
       <div class="small">TEST STATUS</div>
       <div id="testStatus" style="font-size:24px;font-weight:900;color:#17324d">READY</div>
@@ -357,14 +359,15 @@ svg{width:100%;height:260px;border:1px dashed #b9c6d3;border-radius:10px;backgro
         <div class="metric">Remaining<b id="fieldRemaining">30:00</b></div>
       </div>
       <div style="font-size:52px;font-weight:950;margin:12px 0;color:#0b5cab" id="selectedOpacity">—%</div>
-      <div class="small">Look at the plume only at the 15-second observation point, select the opacity, then tap RECORD.</div>
+      <div id="observationCue" class="status warn" style="font-size:18px;text-align:center;margin-bottom:8px">READY — START THE RUN</div>
+      <div class="small">The active 15-second observation cell is highlighted yellow. A beep sounds at each observation point. Select the opacity and tap RECORD.</div>
       <div class="actions" style="justify-content:center;margin-top:10px">
         <button class="primary" id="startTestBtn" onclick="startOneHourTest()">START 30-MINUTE RUN</button>
         <button class="secondary" onclick="pauseOneHourTest()">PAUSE</button>
         <button class="danger" onclick="finishOneHourTest()">FINISH TEST</button>
         <button class="danger" onclick="resetApplication()">NEW TEST / RESET APP</button>
       </div>
-      <div id="testNotice" class="notice" style="margin-top:10px">The 30-minute run clock is independent of the opacity entry. A reading is recorded only when you tap RECORD.</div>
+      <div id="testNotice" class="notice" style="margin-top:10px">The run clock is independent of opacity entry. The active 15-second cell is highlighted yellow and the app beeps at each reading point. Tap RECORD READING & NEXT after selecting the observed opacity.</div>
       <div class="small" style="margin-top:6px">Automatic save: every 2 minutes and whenever a reading/field changes. <span id="saveStatus">Not saved yet</span></div>
     </div>
 
@@ -399,7 +402,7 @@ svg{width:100%;height:260px;border:1px dashed #b9c6d3;border-radius:10px;backgro
 
 <section id="results">
   <div class="card">
-    <h2>8. Method 9 data reduction &amp; 30-minute run screening</h2>
+    <h2>8. Method 9 data reduction &amp; run screening</h2>
     <div class="summary-grid">
       <div class="metric">Readings entered<b id="count">0</b></div>
       <div class="metric">6-minute windows<b id="windows">0</b></div>
@@ -440,16 +443,35 @@ svg{width:100%;height:260px;border:1px dashed #b9c6d3;border-radius:10px;backgro
 
 <script>
 const ids=[...document.querySelectorAll('input,select,textarea')].map(x=>x.id).filter(Boolean);
-const RUN_MINUTES=30, OBS_COUNT=120, ROW_COUNT=30;
+let RUN_MINUTES=30, OBS_COUNT=120, ROW_COUNT=30;
 let readings=Array(OBS_COUNT).fill(null), comments=Array(ROW_COUNT).fill(''), quickValue=null;
 let timerHandle=null, seconds=0;
 let testTimer=null, testRunning=false, testPaused=false, testStartMs=0, testElapsedSec=0;
+let activeObservationIndex=-1, lastCueIndex=-1, audioCtx=null;
 let stopwatchHandle=null, stopwatchRunning=false, stopwatchElapsedSec=0, weatherData=null;
 let weatherSnapshots={start:null,end:null}, sunSnapshots={start:null,end:null};
 
 function $(id){return document.getElementById(id)}
 const html={escape:v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;')};
 function val(id){return $(id)?.value||''}
+function configureRunDuration(){
+  const minutes=Number($('duration')?.value||30);
+  RUN_MINUTES=(minutes===60)?60:30;
+  OBS_COUNT=RUN_MINUTES*4;
+  ROW_COUNT=RUN_MINUTES;
+  if(!Array.isArray(readings)) readings=[];
+  if(readings.length<OBS_COUNT) readings=readings.concat(Array(OBS_COUNT-readings.length).fill(null));
+  else if(readings.length>OBS_COUNT) readings=readings.slice(0,OBS_COUNT);
+  if(!Array.isArray(comments)) comments=[];
+  if(comments.length<ROW_COUNT) comments=comments.concat(Array(ROW_COUNT-comments.length).fill(''));
+  else if(comments.length>ROW_COUNT) comments=comments.slice(0,ROW_COUNT);
+  const n=OBS_COUNT;
+  if($('startTestBtn')) $('startTestBtn').textContent=`START ${RUN_MINUTES}-MINUTE RUN`;
+  if($('fieldReading')) $('fieldReading').textContent=`${Math.min((readings.findIndex(x=>x==null)<0?OBS_COUNT:readings.findIndex(x=>x==null))+1,n)} / ${n}`;
+  if($('fieldRemaining')) $('fieldRemaining').textContent=fmtHMS(RUN_MINUTES*60);
+  updateQuickUI();
+  updateResults();
+}
 function save(){
   const data={};
   ids.forEach(id=>data[id]=val(id));
@@ -485,7 +507,7 @@ function restoreAutosave(){
     if(readings.length<OBS_COUNT) readings=readings.concat(Array(OBS_COUNT-readings.length).fill(null));
     comments=Array.isArray(d.comments)?d.comments.slice(0,ROW_COUNT):comments;
     if(comments.length<ROW_COUNT) comments=comments.concat(Array(ROW_COUNT-comments.length).fill(''));
-    $('duration').value=RUN_MINUTES;
+    $('duration').value=String(RUN_MINUTES);
     testElapsedSec=Number(d.testElapsedSec||0);
      stopwatchElapsedSec=Number(d.stopwatchElapsedSec||0);
      stopwatchRunning=Boolean(d.stopwatchRunning);
@@ -514,14 +536,16 @@ function restoreSnapshotFields(){
 }
 function load(){
   const raw=localStorage.getItem('method9Data');
-  if(!raw){ $('date').value=new Date().toISOString().slice(0,10); $('duration').value=RUN_MINUTES; render(); return; }
+  if(!raw){ $('date').value=new Date().toISOString().slice(0,10); $('duration').value=String(RUN_MINUTES); render(); return; }
   try{
     const d=JSON.parse(raw);
     ids.forEach(id=>{if(d[id]!==undefined)$(id).value=d[id]});
-    // Every field run is exactly 30 minutes / 30 rows / 120 observations.
-    $('duration').value=RUN_MINUTES;
+    // Run duration is selected as 30 or 60 minutes; each 30-minute block has 120 observations.
+    if(d.duration!==undefined) $('duration').value=String(d.duration);
+    configureRunDuration();
     if(Array.isArray(d.readings)) readings=d.readings.slice(0,OBS_COUNT);
     if(readings.length<OBS_COUNT) readings=readings.concat(Array(OBS_COUNT-readings.length).fill(null));
+    configureRunDuration();
     if(Array.isArray(d.comments)) comments=d.comments.slice(0,ROW_COUNT);
     if(comments.length<ROW_COUNT) comments=comments.concat(Array(ROW_COUNT-comments.length).fill(''));
     if(d.weatherSnapshots && typeof d.weatherSnapshots==='object') weatherSnapshots=d.weatherSnapshots;
@@ -535,6 +559,18 @@ function load(){
   renderSourceSketchAnnotations();
 }
 ids.forEach(id=>document.addEventListener('input',e=>{if(e.target.id===id){save();updateAll()}}));
+$('duration')?.addEventListener('change',()=>{
+  if(testRunning){ alert('Finish or pause the current run before changing the run duration.'); $('duration').value=String(RUN_MINUTES); return; }
+  const oldCount=OBS_COUNT;
+  configureRunDuration();
+  if(oldCount!==OBS_COUNT){
+    activeObservationIndex=-1; lastCueIndex=-1; clearObservationCue();
+    $('testStatus').textContent='READY';
+    $('testNotice').textContent=`Ready for a ${RUN_MINUTES}-minute run: ${OBS_COUNT} observations at 15-second intervals.`;
+    save();
+  }
+  render(); updateTestClock();
+});
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 function showTab(t){
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
@@ -542,7 +578,7 @@ function showTab(t){
   if(t==='results') updateResults();
   if(t==='report') {buildReport();}
 }
-function add30(){if(readings.length>=OBS_COUNT){alert('This 30-minute run already contains all 120 observation positions.');return} readings.push(...Array(Math.min(30,OBS_COUNT-readings.length)).fill(null));render();save();autoSave()}
+function add30(){if(readings.length>=OBS_COUNT){alert(`This ${RUN_MINUTES}-minute run already contains all ${OBS_COUNT} observation positions.`);return} readings.push(...Array(Math.min(30,OBS_COUNT-readings.length)).fill(null));render();save();autoSave()}
 function normalize(x){
   if(x===''||x==null)return null;
   let n=Number(x); if(!Number.isFinite(n))return null;
@@ -555,7 +591,7 @@ function render(){
     h+=`<tr><td class="time">${r+1}</td>`;
     for(let c=0;c<4;c++){
       const i=r*4+c, v=readings[i]==null?'':readings[i];
-      h+=`<td><input inputmode="numeric" type="number" min="0" max="100" step="5" value="${v}" data-i="${i}" aria-label="Observation ${i+1}"></td>`;
+      h+=`<td class="obs-cell" data-cell-i="${i}"><input inputmode="numeric" type="number" min="0" max="100" step="5" value="${v}" data-i="${i}" aria-label="Observation ${i+1}"></td>`;
     }
     h+=`<td><input data-comment="${r}" value="${String(comments[r]||'').replace(/"/g,'&quot;')}" placeholder="Comments"></td></tr>`;
   }
@@ -796,7 +832,7 @@ function updateQuickUI(){
 function recordQuick(){
   const idx=readings.findIndex(x=>x==null);
   if(quickValue==null){alert('Select an opacity value first.');return}
-  if(idx<0){alert('All 120 observations are already filled.');return}
+  if(idx<0){alert(`All ${OBS_COUNT} observations are already filled.`);return}
   readings[idx]=quickValue;
   quickValue=null;
   updateQuickUI();
@@ -808,9 +844,64 @@ function recordQuick(){
     finishOneHourTest();
   }
 }
+function ensureAudio(){
+  try{
+    if(!audioCtx){
+      const AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC) return false;
+      audioCtx=new AC();
+    }
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    return true;
+  }catch(e){ return false; }
+}
+function beepObservation(){
+  try{
+    if(!ensureAudio()) return;
+    const now=audioCtx.currentTime;
+    const osc=audioCtx.createOscillator();
+    const gain=audioCtx.createGain();
+    osc.type='sine'; osc.frequency.setValueAtTime(880,now);
+    osc.frequency.exponentialRampToValueAtTime(660,now+0.12);
+    gain.gain.setValueAtTime(0.0001,now);
+    gain.gain.exponentialRampToValueAtTime(0.18,now+0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001,now+0.18);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(now); osc.stop(now+0.2);
+  }catch(e){}
+}
+function updateObservationCue(force=false){
+  const cue=$('observationCue');
+  if(!cue) return;
+  if(!testRunning){
+    cue.className='status warn';
+    cue.textContent=readings.some(x=>x!=null)?'RUN NOT ACTIVE — LAST READING REMAINS HIGHLIGHTED':'READY — START THE RUN';
+    return;
+  }
+  const elapsed=Math.max(0,testPaused?testElapsedSec:Math.floor((Date.now()-testStartMs)/1000));
+  const idx=Math.min(OBS_COUNT-1,Math.floor(elapsed/15));
+  activeObservationIndex=idx;
+  document.querySelectorAll('#obsTable td.obs-cell').forEach(td=>td.classList.toggle('current-observation',Number(td.dataset.cellI)===idx));
+  const minute=Math.floor(idx/4)+1, sec=(idx%4)*15;
+  cue.className='status ok';
+  cue.textContent=`OBSERVATION ${idx+1} OF ${OBS_COUNT} — MIN ${minute}, ${sec} SEC — RECORD NOW`;
+  if(testRunning && !testPaused && (force || idx!==lastCueIndex)){
+    if(force || idx>lastCueIndex){
+      beepObservation();
+      lastCueIndex=idx;
+    }
+  }
+}
+function clearObservationCue(){
+  activeObservationIndex=-1;
+  document.querySelectorAll('#obsTable td.obs-cell').forEach(td=>td.classList.remove('current-observation'));
+}
+
 async function startOneHourTest(){
   if(testRunning){return}
-  if(readings.some(x=>x!=null) && !confirm('Start a new 30-minute run and clear the current readings?')) return;
+  ensureAudio();
+  const runLabel=`${RUN_MINUTES}-minute`;
+  if(readings.some(x=>x!=null) && !confirm(`Start a new ${runLabel} run and clear the current readings?`)) return;
   readings=Array(OBS_COUNT).fill(null);
   comments=Array(ROW_COUNT).fill('');
   quickValue=null;
@@ -818,6 +909,8 @@ async function startOneHourTest(){
   testPaused=false;
   testStartMs=Date.now();
   testElapsedSec=0;
+  activeObservationIndex=0;
+  lastCueIndex=-1;
   $('startTestBtn').disabled=true;
   $('testStatus').textContent='STARTING — CAPTURING FIELD CONDITIONS';
   $('testStatus').style.color='#a15c00';
@@ -834,10 +927,11 @@ async function startOneHourTest(){
   }catch(e){}
   $('testStatus').textContent='RUNNING';
   $('testStatus').style.color='#16803c';
-  $('testNotice').textContent='START conditions captured/attempted. Enter one opacity observation every 15 seconds. This run contains exactly 30 minutes / 120 observations.';
+  $('testNotice').textContent=`START conditions captured/attempted. Enter one opacity observation every 15 seconds. This run contains exactly ${RUN_MINUTES} minutes / ${OBS_COUNT} observations.`;
   clearInterval(testTimer);
-  testTimer=setInterval(updateTestClock,250);
+  testTimer=setInterval(updateTestClock,100);
   render();
+  updateObservationCue(true);
   save();
   autoSave();
   updateTestClock();
@@ -863,6 +957,7 @@ async function finishOneHourTest(){
   testRunning=false;
   testPaused=false;
   clearInterval(testTimer); testTimer=null;
+  clearObservationCue();
   if(testStartMs && !testElapsedSec)testElapsedSec=Math.floor((Date.now()-testStartMs)/1000);
   $('testStatus').textContent='FINISHING — CAPTURING END CONDITIONS';
   $('testStatus').style.color='#a15c00';
@@ -876,7 +971,7 @@ async function finishOneHourTest(){
   $('testStatus').textContent='FINISHED';
   $('testStatus').style.color='#0b5cab';
   $('startTestBtn').disabled=false;
-  $('testNotice').textContent=`Test finished with ${readings.filter(x=>x!=null).length} of 120 observations entered. END conditions captured/attempted. Review Results before finalizing the record.`;
+  $('testNotice').textContent=`Test finished with ${readings.filter(x=>x!=null).length} of ${OBS_COUNT} observations entered. END conditions captured/attempted. Review Results before finalizing the record.`;
   updateTestClock();
   updateResults();
   save();
@@ -892,6 +987,7 @@ function updateTestClock(){
   $('fieldElapsed').textContent=fmtHMS(elapsed);
   $('fieldRemaining').textContent=fmtHMS(rem);
   $('selectedOpacity').textContent=quickValue==null?'—%':quickValue+'%';
+  updateObservationCue(false);
   if(testRunning && !testPaused && elapsed>=RUN_MINUTES*60){
     finishOneHourTest();
   }
@@ -1212,7 +1308,7 @@ function epaField(label,id,extra=''){
 }
 function buildReport(){
   const requiredN=Math.min(OBS_COUNT,Math.round(Math.max(6,Number(val('duration')||RUN_MINUTES))*4));
-  const pages=Math.max(1,Math.ceil(requiredN/120)); // 30 minutes / page = 120 observations.
+  const pages=Math.max(1,Math.ceil(requiredN/120)); // Each printed page represents one 30-minute block (120 observations).
   const limit=Number(val('limit'));
 
   let windows=[];
@@ -1351,6 +1447,7 @@ enableSketch();
 renderSourceSketchAnnotations();
 initQuickButtons();
 updateStopwatch();
+configureRunDuration();
 load();
 setInterval(autoSave, 120000);
 window.addEventListener('beforeunload',autoSave);
