@@ -4,126 +4,185 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="EPA Method 9">
 <title>EPA Method 9 Field App</title>
 <style>
-:root{--blue:#176bb3;--dark:#173b57;--light:#eef5fa;--border:#b9cad7;--red:#a42e25;--yellow:#ffe66b}
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--dark);background:#fff}
-header{position:sticky;top:0;z-index:10;background:var(--blue);color:#fff;padding:calc(16px + env(safe-area-inset-top)) 18px 14px;box-shadow:0 2px 8px #0002}
-h1{font-size:30px;margin:4px 0 14px;font-weight:800}.tabs{display:flex;gap:8px;overflow:auto}.tabs button{white-space:nowrap;border:0;border-radius:28px;padding:13px 18px;background:#ffffff22;color:#fff;font-weight:800;font-size:17px}.tabs button.active{background:#fff;color:var(--blue)}
-main{max-width:900px;margin:auto;padding:14px 14px 90px}.panel{border:2px solid var(--border);border-radius:24px;background:var(--light);padding:18px;margin:12px 0}.panel h2{margin:0 0 14px;font-size:25px}
-button{font:inherit;font-weight:800;border:0;border-radius:15px;padding:14px 18px;background:#e6eef5;color:var(--dark);cursor:pointer}.primary{background:var(--blue);color:#fff}.danger{background:#fde1dd;color:var(--red)}.wide{width:100%}.controls{display:flex;flex-wrap:wrap;gap:10px}.status{text-align:center;font-size:24px;font-weight:800;margin:4px}.timer{text-align:center;font-size:52px;font-weight:900;letter-spacing:2px}.hint{text-align:center;color:#5e7180;font-weight:650}
-#keypad{border:3px solid var(--blue);border-radius:24px;background:#fff;padding:14px}.current{font-size:23px;font-weight:900;text-align:center;margin-bottom:10px}.keys{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}.keys button{font-size:18px;padding:16px 4px}.keys button.selected{background:var(--blue);color:#fff;outline:4px solid #9bc9ef}.record{margin-top:12px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.obs{background:#fff;border:2px solid var(--border);border-radius:15px;padding:8px;text-align:center}.obs.currentObs{background:var(--yellow);border-color:#c8a900}.obs b{font-size:14px}.obs input{width:100%;font-size:22px;text-align:center;border:2px solid var(--border);border-radius:10px;padding:8px;margin-top:6px}
-label{display:block;font-weight:800;margin:10px 0 5px}input,select,textarea{width:100%;padding:11px;border:2px solid var(--border);border-radius:10px;font-size:16px;background:#fff}textarea{min-height:80px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.result{font-size:20px;font-weight:800;padding:12px;background:#fff;border-radius:12px;margin:7px 0}.small{font-size:14px;color:#607482}
-.sketch{background:#fff;border:2px solid #333;padding:8px}.sketch svg{width:100%;height:auto}
-.hidden{display:none}@media(max-width:600px){h1{font-size:25px}.timer{font-size:44px}.keys button{padding:13px 2px}.grid{grid-template-columns:1fr}.two{grid-template-columns:1fr}}
-@media print{header,.noPrint{display:none!important}.panel{break-inside:avoid;border:1px solid #555}.printOnly{display:block!important}body{font-size:12px}}
+*{box-sizing:border-box}body{margin:0;background:#f3f5f7;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:#123b63;color:white;padding:18px 14px}h1{font-size:22px;margin:0 0 4px}.sub{font-size:13px}
+main{max-width:1000px;margin:auto;padding:12px}.card{background:white;border:1px solid #ccd5dd;border-radius:12px;padding:14px;margin-bottom:12px}
+h2{font-size:18px;color:#123b63;margin:0 0 12px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+label{font-size:13px;font-weight:700}input,select,textarea{width:100%;margin-top:5px;padding:10px;border:1px solid #aeb9c4;border-radius:8px;font-size:16px;background:#fff}
+textarea{min-height:70px}button{border:0;border-radius:9px;padding:11px 14px;margin:3px;font-size:16px;font-weight:700;background:#e5eaf0}
+.primary{background:#16823b;color:#fff}.blue{background:#0b5cab;color:#fff}.danger{background:#b42318;color:#fff}
+.timer{text-align:center;font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;margin:8px}.status{text-align:center;font-weight:800}
+.progress{height:10px;background:#dce3e9;border-radius:10px;overflow:hidden}.progress div{height:100%;width:0;background:#16823b}
+.reading{background:#eef6fc;border:1px solid #bed2e4;border-radius:10px;padding:12px;margin-top:12px}.reading input{font-size:24px;text-align:center;font-weight:800}
+.obswrap{overflow-x:auto}.obsgrid{display:grid;grid-template-columns:repeat(4,78px);gap:4px;min-width:320px}
+.obs{border:1px solid #9aa7b3;border-radius:5px;padding:5px;text-align:center;font-size:12px;background:#fff}.obs.active{background:#fff1a8;border:3px solid #bd8500;padding:3px;font-weight:800}.obs.done{background:#dff3e4}.obs input{padding:4px;margin-top:3px;font-size:14px;text-align:center}
+.small{font-size:12px;color:#52606d}.controls{display:flex;flex-wrap:wrap;align-items:center}
+.sketch{width:100%;border:1px solid #ccd5dd;border-radius:8px;background:#fff}
+@media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}@media print{header,.no-print{display:none!important}.card{box-shadow:none;break-inside:avoid}}
 </style>
 </head>
 <body>
-<header>
-<h1>EPA Method 9 Field App</h1>
-<div class="tabs">
-<button class="active" onclick="showTab('form',this)">EPA Form 1</button>
-<button onclick="showTab('readings',this)">Readings</button>
-<button onclick="showTab('results',this)">Results</button>
-<button onclick="showTab('report',this)">Print Report</button>
-</div>
-</header>
-
+<header><h1>EPA Method 9 — Visible Emissions Field App</h1><div class="sub">15-second observations • 30- or 60-minute run</div></header>
 <main>
-<section id="form" class="tab">
-<div class="panel"><h2>Test Information</h2>
-<div class="two">
-<div><label>Company Name</label><input id="company"></div><div><label>Facility Name</label><input id="facility"></div>
-<div><label>Street Address</label><input id="address"></div><div><label>Test Date</label><input id="date" type="date"></div>
-<div><label>Observer Name</label><input id="observer"></div><div><label>Organization</label><input id="org"></div>
-<div><label>Observation Duration</label><select id="duration"><option value="30">30 minutes</option><option value="60">60 minutes</option></select></div>
-<div><label>Time Zone</label><input id="tz" value="Local"></div>
-</div></div>
-<div class="panel"><h2>Emission Point / Geometry</h2>
-<div class="two">
-<div><label>Stack / Emission Point Height (ft)</label><input id="stackHeight" type="number" step="0.1"></div>
-<div><label>Observer Eye Height (ft)</label><input id="eyeHeight" type="number" step="0.1" value="5.0"></div>
-<div><label>Vertical Angle to Observation Point (°)</label><input id="angle" type="number" step="0.1"></div>
-<div><label>Measured / Estimated Distance (ft)</label><input id="distance" type="number" step="0.1"></div>
+
+<section class="card">
+<h2>1. Test Information</h2>
+<div class="grid">
+<label>Company<input id="company"></label>
+<label>Location<input id="location"></label>
+<label>Observer<input id="observer"></label>
+<label>Point of Emissions<input id="point"></label>
+<label>Date<input id="date" type="date"></label>
+<label>Duration<select id="duration"><option value="30">30 minutes</option><option value="60">60 minutes</option></select></label>
 </div>
-<div class="controls noPrint" style="margin-top:10px"><button class="primary" onclick="startTilt()">📐 Measure Distance with iPhone Tilt</button><button onclick="calcHeight()">Calculate Height</button></div>
-<div id="tiltStatus" class="hint"></div><div id="heightResult" class="result">Estimated emission-point height: —</div>
-</div>
-<div class="panel"><h2>Weather — Beginning</h2><div class="two">
-<div><label>Wind Speed</label><input id="windStart"></div><div><label>Wind Direction</label><input id="windDirStart"></div>
-<div><label>Ambient Temperature</label><input id="tempStart"></div><div><label>Relative Humidity</label><input id="rhStart"></div>
-<div><label>Sky Conditions</label><input id="skyStart"></div><div><label>Background Color</label><input id="bgStart"></div>
-</div><button class="primary noPrint" onclick="getWeather('start')">🌤 Capture Beginning Weather</button></div>
-<div class="panel"><h2>Weather — Ending</h2><div class="two">
-<div><label>Wind Speed</label><input id="windEnd"></div><div><label>Wind Direction</label><input id="windDirEnd"></div>
-<div><label>Ambient Temperature</label><input id="tempEnd"></div><div><label>Relative Humidity</label><input id="rhEnd"></div>
-<div><label>Sky Conditions</label><input id="skyEnd"></div><div><label>Background Color</label><input id="bgEnd"></div>
-</div><button class="primary noPrint" onclick="getWeather('end')">🌤 Capture Ending Weather</button></div>
-<div class="panel"><h2>Source Layout Sketch</h2><div class="sketch">
-<svg viewBox="0 0 700 470" aria-label="Method 9 source layout sketch">
-<rect x="1" y="1" width="698" height="468" fill="white" stroke="#222" stroke-width="3"/>
-<text x="350" y="35" text-anchor="middle" font-size="24" font-weight="700">Source Layout Sketch</text>
-<circle cx="610" cy="75" r="38" fill="none" stroke="#222" stroke-width="3"/><text x="610" y="25" text-anchor="middle" font-size="15">Draw North Arrow</text>
-<text x="610" y="125" text-anchor="middle" font-size="16">N / M N</text>
-<line x1="350" y1="165" x2="350" y2="300" stroke="#222" stroke-width="4"/><text x="365" y="170" font-size="17">Observation Point</text><text x="365" y="320" font-size="17">Observer's Position</text>
-<circle cx="350" cy="300" r="7" fill="#222"/><path d="M350 300 L80 410 M350 300 L620 410" stroke="#222" stroke-width="4" fill="none"/>
-<path d="M300 320 Q350 365 400 320" stroke="#222" stroke-width="3" fill="none"/><text x="350" y="370" text-anchor="middle" font-size="18">40°</text>
-<line x1="80" y1="410" x2="620" y2="410" stroke="#777" stroke-width="2" stroke-dasharray="6 5"/><text x="350" y="445" text-anchor="middle" font-size="17">Sun Location Line</text>
-<rect x="470" y="155" width="205" height="125" fill="none" stroke="#222" stroke-width="3"/><text x="575" y="180" text-anchor="middle" font-size="16">Side View</text><line x1="500" y1="225" x2="640" y2="225" stroke="#222" stroke-width="3"/><text x="645" y="230" font-size="15">FT</text>
-<text x="510" y="310" font-size="16">Stack with Plume</text><circle cx="630" cy="300" r="12" fill="none" stroke="#222" stroke-width="3"/>
-<text x="510" y="350" font-size="16">Sun ⊕</text><text x="510" y="380" font-size="16">Wind →</text>
-</svg></div></div>
 </section>
 
-<section id="readings" class="tab hidden">
-<div class="panel"><div id="testStatus" class="status">READY</div><div id="timer" class="timer">00:00:00</div>
-<div class="controls noPrint"><button class="primary" onclick="startTest()">START TEST</button><button onclick="pauseTest()">PAUSE</button><button class="danger" onclick="finishTest()">FINISH</button><button class="danger" onclick="resetTest()">NEW TEST / RESET</button></div>
-<p id="testHint" class="hint">Select an opacity below and tap RECORD. The current observation advances automatically every 15 seconds while the test is running.</p></div>
-<div class="panel" id="keypad"><div class="current">CURRENT OBSERVATION: <span id="currentNum">1</span> / <span id="totalNum">120</span></div>
-<div class="keys" id="keys"></div><button class="primary wide record noPrint" onclick="recordReading()">RECORD READING & NEXT</button></div>
-<div class="panel"><h2>Observation Grid</h2><div class="grid" id="obsGrid"></div></div>
+<section class="card">
+<h2>2. Weather — Beginning</h2>
+<div class="grid">
+<label>Temperature °F<input id="tempStart" type="number" step=".1"></label>
+<label>Relative Humidity %<input id="rhStart" type="number"></label>
+<label>Wind Speed mph<input id="windStart" type="number" step=".1"></label>
+<label>Wind Direction °<input id="windDirStart" type="number"></label>
+</div>
+<button class="blue no-print" id="weatherStart">GET GPS + WEATHER</button><span id="ws" class="small"></span>
 </section>
 
-<section id="results" class="tab hidden"><div class="panel"><h2>Results</h2><div id="resultsBox"></div></div></section>
-<section id="report" class="tab hidden"><div class="panel"><h2>EPA Method 9 Report</h2><div id="reportBox"></div><button class="primary wide noPrint" onclick="window.print()">PRINT / SAVE PDF</button></div></section>
+<section class="card">
+<h2>3. Observation Run</h2>
+<div class="controls no-print">
+<button class="primary" id="start">START / RESUME</button>
+<button id="pause">PAUSE</button>
+<button class="danger" id="finish">FINISH TEST</button>
+<button id="reset">NEW TEST / RESET</button>
+</div>
+<div class="timer" id="timer">00:00.0</div>
+<div class="status" id="state">READY</div>
+<div class="progress"><div id="bar"></div></div>
+<p id="count" class="small">Observation 1 of 120</p>
+<div class="reading">
+<label>Current Opacity Reading (%)<input id="reading" type="number" min="0" max="100" step="5" inputmode="numeric" placeholder="0–100"></label>
+<button class="blue no-print" id="record" style="width:100%">RECORD READING & NEXT</button>
+<p class="small">Enter opacity in 5% increments. The yellow cell is the current 15-second observation.</p>
+</div>
+<div class="obswrap"><div class="obsgrid" id="obsgrid"></div></div>
+</section>
+
+<section class="card">
+<h2>4. Weather — End</h2>
+<div class="grid">
+<label>Temperature °F<input id="tempEnd" type="number" step=".1"></label>
+<label>Relative Humidity %<input id="rhEnd" type="number"></label>
+<label>Wind Speed mph<input id="windEnd" type="number" step=".1"></label>
+<label>Wind Direction °<input id="windDirEnd" type="number"></label>
+</div>
+<button class="blue no-print" id="weatherEnd">GET GPS + WEATHER</button><span id="we" class="small"></span>
+</section>
+
+<section class="card">
+<h2>5. Distance / Height Field Assist</h2>
+<div class="grid">
+<label>Known Height Difference ft<input id="height" type="number" step=".1"></label>
+<label>Known Horizontal Distance ft<input id="distance" type="number" step=".1"></label>
+<label>Vertical Angle °<input id="angle" type="number" step=".1"></label>
+<label>Calculated Distance ft<input id="calcDistance" readonly></label>
+<label>Calculated Height ft<input id="calcHeight" readonly></label>
+<label>GPS Bearing °<input id="bearing" readonly></label>
+</div>
+<button class="blue no-print" id="tilt">ENABLE iPHONE TILT</button>
+<button class="no-print" id="gps">GET GPS POSITION</button>
+<p class="small">Field-assist only. Verify measurements as required by your procedure. Distance = height ÷ tan(angle); height = distance × tan(angle).</p>
+</section>
+
+<section class="card">
+<h2>6. Source Sketch</h2>
+<svg class="sketch" viewBox="0 0 700 360">
+<line x1="35" y1="305" x2="665" y2="305" stroke="#333" stroke-width="2"/>
+<rect x="285" y="150" width="130" height="155" fill="none" stroke="#333" stroke-width="3"/>
+<rect x="315" y="90" width="70" height="60" fill="none" stroke="#333" stroke-width="3"/>
+<line x1="350" y1="90" x2="350" y2="45" stroke="#333" stroke-width="5"/>
+<circle cx="150" cy="70" r="28" fill="none" stroke="#333" stroke-width="3"/>
+<line x1="150" y1="25" x2="150" y2="5" stroke="#333" stroke-width="3"/><line x1="150" y1="115" x2="150" y2="135" stroke="#333" stroke-width="3"/>
+<line x1="105" y1="70" x2="85" y2="70" stroke="#333" stroke-width="3"/><line x1="195" y1="70" x2="215" y2="70" stroke="#333" stroke-width="3"/>
+<text x="105" y="165" font-size="16">SUN / SUN CHECK</text>
+<line x1="55" y1="230" x2="145" y2="230" stroke="#0b5cab" stroke-width="4"/>
+<text x="60" y="215" font-size="15">WIND →</text>
+<line x1="185" y1="280" x2="285" y2="280" stroke="#b42318" stroke-width="3" stroke-dasharray="8 6"/>
+<text x="185" y="270" font-size="14">Observer</text><text x="420" y="270" font-size="14">Emission point</text>
+</svg>
+<div class="grid"><label>Sun Check / Notes<textarea id="sun"></textarea></label><label>Sketch / Wind Notes<textarea id="notes"></textarea></label></div>
+</section>
+
+<section class="card no-print">
+<h2>7. Save / Print</h2>
+<button class="blue" id="print">PRINT METHOD 9 FIELD SHEET</button>
+<button id="save">SAVE TEST</button>
+<button id="load">LOAD SAVED TEST</button>
+</section>
+
 </main>
-
 <script>
-const S={duration:30,running:false,paused:false,startMs:0,elapsed:0,current:1,selected:null,readings:[],timerId:null,advanceId:null,auto:false};
+(()=> {
 const $=id=>document.getElementById(id);
-function showTab(id,btn){document.querySelectorAll('.tab').forEach(x=>x.classList.add('hidden'));$(id).classList.remove('hidden');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');if(id==='results'||id==='report')renderResults();}
-function buildKeys(){let a=[];for(let i=0;i<=100;i+=5)a.push(i);$('keys').innerHTML=a.map(v=>`<button onclick="selectOpacity(${v})" id="k${v}">${v}%</button>`).join('')}
-function selectOpacity(v){S.selected=v;document.querySelectorAll('.keys button').forEach(b=>b.classList.remove('selected'));$('k'+v).classList.add('selected')}
-function total(){return S.duration*4}
-function buildGrid(){S.readings=Array(total()).fill(null);$('totalNum').textContent=total();$('obsGrid').innerHTML=S.readings.map((v,i)=>`<div class="obs ${i===0?'currentObs':''}" id="o${i}"><b>OBS ${i+1} • ${fmt((i)*15000)}</b><input inputmode="decimal" value="${v??''}" onchange="manual(${i},this.value)" aria-label="Observation ${i+1}"></div>`).join('');$('currentNum').textContent=S.current}
-function manual(i,v){let n=v===''?null:Number(v);if(n!==null&&(!isFinite(n)||n<0||n>100))return;S.readings[i]=n}
-function fmt(ms){let s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return [h,m,x].map((n,i)=>String(n).padStart(i?2:2,'0')).join(':')}
-function beep(){try{let a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.frequency.value=880;g.gain.value=.05;o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+.12)}catch(e){}}
-function startTest(){if(S.running)return;if(!S.startMs)S.startMs=Date.now();S.running=true;S.paused=false;$('testStatus').textContent='RUNNING';$('testHint').textContent='Yellow observation advances every 15 seconds. Select opacity and record, or enter directly in the grid.';clearInterval(S.timerId);S.timerId=setInterval(tick,250);clearTimeout(S.advanceId);scheduleAdvance()}
-function tick(){S.elapsed=Date.now()-S.startMs; if(S.elapsed>=S.duration*60000){finishTest();return}$('timer').textContent=fmt(S.elapsed)}
-function scheduleAdvance(){S.advanceId=setTimeout(()=>{if(!S.running)return;advanceObservation(true);scheduleAdvance()},15000)}
-function advanceObservation(auto){if(S.current>=total()){if(auto)finishTest();return}if(S.selected!==null){S.readings[S.current-1]=S.selected;$('o'+(S.current-1)).querySelector('input').value=S.selected}S.selected=null;document.querySelectorAll('.keys button').forEach(b=>b.classList.remove('selected'));$('o'+(S.current-1)).classList.remove('currentObs');S.current++;$('currentNum').textContent=S.current;$('o'+(S.current-1)).classList.add('currentObs');beep();save()}
-function recordReading(){if(!S.running){startTest()}if(S.selected===null){alert('Select an opacity first.');return}S.readings[S.current-1]=S.selected;$('o'+(S.current-1)).querySelector('input').value=S.selected;advanceObservation(false)}
-function pauseTest(){if(!S.running)return;S.running=false;S.elapsed=Date.now()-S.startMs;clearInterval(S.timerId);clearTimeout(S.advanceId);$('testStatus').textContent='PAUSED'}
-function finishTest(){if(!S.startMs)return;S.running=false;clearInterval(S.timerId);clearTimeout(S.advanceId);S.elapsed=Math.min(Date.now()-S.startMs,S.duration*60000);$('timer').textContent=fmt(S.elapsed);$('testStatus').textContent='FINISHED';captureWeather('end');renderResults();save()}
-function resetTest(){if(!confirm('Start a new test and clear readings?'))return;S.startMs=0;S.elapsed=0;S.running=false;S.paused=false;S.current=1;S.selected=null;clearInterval(S.timerId);clearTimeout(S.advanceId);$('timer').textContent='00:00:00';$('testStatus').textContent='READY';buildGrid();save()}
-function averages(){let out=[];for(let start=0;start<S.readings.length;start+=24){let a=S.readings.slice(start,start+24).filter(v=>v!==null);out.push(a.length?(a.reduce((x,y)=>x+y,0)/a.length):null)}return out}
-function renderResults(){let av=averages(),valid=S.readings.filter(v=>v!==null);$('resultsBox').innerHTML=`<div class="result">Test: ${S.duration} minutes</div><div class="result">Recorded observations: ${valid.length} / ${total()}</div><div class="result">Overall average of recorded observations: ${valid.length?(valid.reduce((a,b)=>a+b,0)/valid.length).toFixed(1):'—'}%</div><h3>Rolling 6-minute averages</h3>`+av.map((v,i)=>`<div class="result">Minutes ${i*6+1}–${i*6+6}: ${v===null?'—':v.toFixed(1)+'%'}</div>`).join('');renderReport()}
-function renderReport(){let ids=['company','facility','address','date','observer','org','duration','stackHeight','eyeHeight','angle','distance','windStart','windDirStart','tempStart','rhStart','skyStart','bgStart','windEnd','windDirEnd','tempEnd','rhEnd','skyEnd','bgEnd'];let labels=['Company','Facility','Address','Date','Observer','Organization','Duration','Stack height (ft)','Eye height (ft)','Vertical angle (°)','Distance (ft)','Start wind speed','Start wind direction','Start ambient temp','Start RH','Start sky','Start background','End wind speed','End wind direction','End ambient temp','End RH','End sky','End background'];$('reportBox').innerHTML=ids.map((id,i)=>`<div><b>${labels[i]}:</b> ${$(id).value||'—'}</div>`).join('')+`<hr><h3>Observation Summary</h3>`+averages().map((v,i)=>`<div><b>6-minute average ${i+1}:</b> ${v===null?'—':v.toFixed(1)+'%'}</div>`).join('')}
-function captureWeather(which){return navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>{const now=new Date().toLocaleTimeString();const note='GPS captured '+now+'; coordinates '+p.coords.latitude.toFixed(5)+', '+p.coords.longitude.toFixed(5);$(which==='start'?'skyStart':'skyEnd').value=($(which==='start'?'skyStart':'skyEnd').value?$(which==='start'?'skyStart':'skyEnd').value+' | ':'')+note;save()},()=>{}) : null}
-function getWeather(which){captureWeather(which);alert('GPS position captured. Weather fields are ready for entry. A live weather API can be connected later if desired.')}
-function startTilt(){if(!window.DeviceOrientationEvent){alert('This iPhone/browser does not expose the tilt sensor.');return}
-let done=false;const handler=e=>{let beta=e.beta; if(beta==null)return;let a=Math.abs(beta-90); if(a<1)a=1;let d=$('distance').value; if(!d){let eye=Number($('eyeHeight').value)||5, h=Number($('stackHeight').value)||0; if(h>eye){let rad=a*Math.PI/180;d=(h-eye)/Math.tan(rad);if(isFinite(d))$('distance').value=d.toFixed(1)}}$('angle').value=a.toFixed(1);$('tiltStatus').textContent='Tilt angle captured: '+a.toFixed(1)+'°. Distance estimate uses entered stack height and eye height.';if(!done){done=true;window.removeEventListener('deviceorientation',handler)}};if(typeof DeviceOrientationEvent.requestPermission==='function'){DeviceOrientationEvent.requestPermission().then(r=>{if(r==='granted')window.addEventListener('deviceorientation',handler)}).catch(()=>alert('Allow Motion & Orientation access for Safari.'))}else window.addEventListener('deviceorientation',handler)}
-function calcHeight(){let d=Number($('distance').value),a=Number($('angle').value),eye=Number($('eyeHeight').value)||0;if(!d||!a){alert('Enter distance and vertical angle first.');return}let h=eye+d*Math.tan(a*Math.PI/180);$('stackHeight').value=h.toFixed(1);$('heightResult').textContent='Estimated emission-point height: '+h.toFixed(1)+' ft'}
-function save(){try{localStorage.setItem('method9',JSON.stringify({S,fields:Object.fromEntries([...document.querySelectorAll('input,select,textarea')].map(x=>[x.id,x.value]))}))}catch(e){}}
-function load(){try{let d=JSON.parse(localStorage.getItem('method9'));if(d){Object.assign(S,d.S);Object.entries(d.fields||{}).forEach(([k,v])=>{if($(k))$(k).value=v})}}catch(e){}}
-$('duration').addEventListener('change',e=>{S.duration=Number(e.target.value);S.startMs=0;S.current=1;buildGrid();save()});
-buildKeys();$('date').value=new Date().toISOString().slice(0,10);load();$('duration').value=S.duration;buildGrid();renderResults();setInterval(save,120000);
+let S={running:false,paused:false,finished:false,elapsed:0,startedAt:0,readings:[]},timer=null,audio=null;
+const formIds=["company","location","observer","point","date","duration","tempStart","rhStart","windStart","windDirStart","tempEnd","rhEnd","windEnd","windDirEnd","height","distance","angle","sun","notes"];
+$("date").value=new Date().toISOString().slice(0,10);
+
+function total(){return +$("duration").value*4}
+function save(){localStorage.setItem("method9_clean",JSON.stringify({S,form:Object.fromEntries(formIds.map(x=>[x,$(x).value]))}))}
+function beep(){try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();let o=audio.createOscillator(),g=audio.createGain();o.frequency.value=880;g.gain.value=.06;o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+.1)}catch(e){}}
+function grid(){
+ let g=$("obsgrid");g.innerHTML="";
+ for(let i=0;i<total();i++){let d=document.createElement("div");d.className="obs";d.id="o"+i;let m=Math.floor(i/4),s=(i%4)*15;
+ d.innerHTML=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")+"<input type=number min=0 max=100 step=5>";
+ let inp=d.querySelector("input");if(S.readings[i]!=null)inp.value=S.readings[i];
+ inp.onchange=()=>{let v=inp.value===""?null:+inp.value;if(v!==null&&(v<0||v>100||v%5)){alert("Use 0–100% in 5% increments.");inp.value=S.readings[i]??"";return}S.readings[i]=v;save()};g.appendChild(d)}
+}
+function idx(){return Math.min(total()-1,Math.floor(S.elapsed/15))}
+function update(){
+ let i=idx(),limit=+$("duration").value*60;
+ $("timer").textContent=String(Math.floor(S.elapsed/60)).padStart(2,"0")+":"+ (S.elapsed%60).toFixed(1).padStart(4,"0");
+ $("state").textContent=S.finished?"FINISHED":S.running?"RUNNING":S.paused?"PAUSED":"READY";
+ $("count").textContent=S.finished?"TEST FINISHED":`Observation ${i+1} of ${total()} • 15-second interval`;
+ $("bar").style.width=Math.min(100,S.elapsed/limit*100)+"%";
+ document.querySelectorAll(".obs").forEach((x,n)=>{x.classList.toggle("active",S.running&&!S.finished&&n===i);x.classList.toggle("done",S.readings[n]!=null)});
+}
+function tick(){
+ if(!S.running)return;
+ let old=Math.floor(S.elapsed/15);S.elapsed=(Date.now()-S.startedAt)/1000;let now=Math.floor(S.elapsed/15);
+ if(now>old)for(let i=old+1;i<=now;i++)beep();
+ if(S.elapsed>=+$("duration").value*60){S.elapsed=+$("duration").value*60;S.running=false;S.finished=true;clearInterval(timer);beep();alert("Observation run complete.")}
+ update();save();
+}
+$("duration").onchange=()=>{if(S.elapsed>0){alert("Select duration before starting.");return}S.readings=[];grid();update()};
+$("start").onclick=()=>{if(S.finished){alert("Press NEW TEST / RESET first.");return}audio=audio||(()=>{try{return new(window.AudioContext||window.webkitAudioContext)()}catch(e){}})();S.running=true;S.paused=false;S.startedAt=Date.now()-S.elapsed*1000;beep();clearInterval(timer);timer=setInterval(tick,100);update();save()};
+$("pause").onclick=()=>{if(!S.running)return;S.elapsed=(Date.now()-S.startedAt)/1000;S.running=false;S.paused=true;clearInterval(timer);update();save()};
+$("finish").onclick=()=>{if(confirm("Finish this Method 9 test?")){if(S.running)S.elapsed=(Date.now()-S.startedAt)/1000;S.running=false;S.finished=true;clearInterval(timer);update();save()}};
+$("record").onclick=()=>{let v=$("reading").value,i=idx();if(v===""){alert("Enter an opacity reading.");return}v=+v;if(v<0||v>100||v%5){alert("Use 0–100% in 5% increments.");return}S.readings[i]=v;let inp=$("o"+i).querySelector("input");inp.value=v;$("reading").value="";if(i+1<total())$("o"+(i+1)).scrollIntoView({behavior:"smooth",block:"nearest"});save();update()};
+$("reset").onclick=()=>{if(!confirm("Start a NEW TEST? This clears the current data."))return;clearInterval(timer);S={running:false,paused:false,finished:false,elapsed:0,startedAt:0,readings:[]};formIds.forEach(x=>$(x).value="");$("date").value=new Date().toISOString().slice(0,10);localStorage.removeItem("method9_clean");grid();update()};
+$("save").onclick=()=>{save();alert("Test saved on this iPhone.")};
+$("load").onclick=()=>{try{let x=JSON.parse(localStorage.getItem("method9_clean"));if(!x)throw 0;S=x.S;formIds.forEach(id=>{if(x.form[id]!=null)$(id).value=x.form[id]});grid();update();alert("Saved test loaded.")}catch(e){alert("No saved test found.")}};
+$("print").onclick=()=>window.print();
+
+async function weather(which,statusId){
+ let st=$(statusId);if(!navigator.geolocation){st.textContent=" GPS unavailable";return}st.textContent=" Getting GPS…";
+ navigator.geolocation.getCurrentPosition(async p=>{try{
+ let u=`https://api.open-meteo.com/v1/forecast?latitude=${p.coords.latitude}&longitude=${p.coords.longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m&temperature_unit=fahrenheit&wind_speed_unit=mph`;
+ let c=(await(await fetch(u)).json()).current;
+ $("temp"+which).value=c.temperature_2m;$("rh"+which).value=c.relative_humidity_2m;$("wind"+which).value=c.wind_speed_10m;$("windDir"+which).value=c.wind_direction_10m;st.textContent=" Weather captured";
+ }catch(e){st.textContent=" Weather unavailable; enter manually"}},()=>st.textContent=" GPS unavailable; enter manually",{enableHighAccuracy:true,timeout:10000})
+}
+$("weatherStart").onclick=()=>weather("Start","ws");$("weatherEnd").onclick=()=>weather("End","we");
+
+function calc(){let a=+$("angle").value,h=+$("height").value,d=+$("distance").value;if(a&&h)$("calcDistance").value=(h/Math.tan(Math.abs(a)*Math.PI/180)).toFixed(1);else $("calcDistance").value="";if(a&&d)$("calcHeight").value=(d*Math.tan(Math.abs(a)*Math.PI/180)).toFixed(1);else $("calcHeight").value=""}
+["angle","height","distance"].forEach(x=>$(x).oninput=calc);
+$("tilt").onclick=async()=>{try{if(typeof DeviceOrientationEvent.requestPermission==="function"&&await DeviceOrientationEvent.requestPermission()!=="granted")throw 0;window.addEventListener("deviceorientation",e=>{if(e.beta!=null){$("angle").value=Math.abs(90-Math.abs(e.beta)).toFixed(1);calc()}});alert("Tilt enabled. Hold the iPhone consistently and verify the angle.")}catch(e){alert("Motion permission was not granted or tilt is unavailable.")}};
+$("gps").onclick=()=>navigator.geolocation?.getCurrentPosition(p=>alert(`Observer GPS\nLatitude: ${p.coords.latitude.toFixed(6)}\nLongitude: ${p.coords.longitude.toFixed(6)}\nAccuracy: ±${Math.round(p.coords.accuracy)} m`),()=>alert("GPS unavailable or permission denied."),{enableHighAccuracy:true});
+
+grid();update();
+})();
 </script>
 </body>
 </html>
