@@ -184,7 +184,28 @@ svg{width:100%;height:260px;border:1px dashed #b9c6d3;border-radius:10px;backgro
           <div class="tilt-panel"><div class="small">Calculated line-of-sight distance</div><div id="tiltLOS" class="tilt-value">— ft</div></div>
         </div>
         <div id="tiltStatus" class="status warn tilt-status">Tap ENABLE TILT SENSOR and allow Motion & Orientation access.</div>
-        <div class="tilt-note">For a valid calculation, the phone must be aimed at the emission point and the emission-point height must be known. This is a field-distance assist; verify the result with a rangefinder, map, or other required method when accuracy matters.</div>
+        <div class="tilt-note">For distance from tilt, the emission-point height must be known. You can also use the estimator below when the horizontal distance is known.</div>
+
+        <div class="tilt-panel" style="margin-top:10px;background:#fffdf3;border-color:#c98a00">
+          <h3 style="margin:0 0 7px;color:#17324d">Emission Point Height Estimator</h3>
+          <div class="small">Use the same observation point and horizontal distance. Aim at the <b>base</b> of the emission point and capture the angle, then aim at the <b>top</b> and capture the angle. The app estimates the height above ground relative to your eye height.</div>
+          <div class="tilt-grid" style="margin-top:9px">
+            <label>Known horizontal distance (ft)<input id="heightEstDistance" type="number" step="1" placeholder="e.g. 200"></label>
+            <label>Observer eye height (ft)<input id="heightEstEye" type="number" step="0.1" placeholder="e.g. 5.5"></label>
+            <div class="tilt-panel"><div class="small">Current tilt angle</div><div id="heightEstLiveAngle" class="tilt-reading">—°</div></div>
+            <div class="tilt-panel"><div class="small">Base angle</div><div id="heightEstBaseAngle" class="tilt-value">—°</div></div>
+            <div class="tilt-panel"><div class="small">Top angle</div><div id="heightEstTopAngle" class="tilt-value">—°</div></div>
+            <div class="tilt-panel"><div class="small">Estimated emission height</div><div id="heightEstResult" class="tilt-reading">— ft</div></div>
+          </div>
+          <div class="weather-actions" style="margin-top:9px">
+            <button class="secondary" onclick="captureHeightBaseAngle()">CAPTURE BASE ANGLE</button>
+            <button class="secondary" onclick="captureHeightTopAngle()">CAPTURE TOP ANGLE</button>
+            <button class="primary" onclick="calculateEstimatedHeight()">CALCULATE HEIGHT</button>
+            <button class="secondary" onclick="useEstimatedHeight()">USE ESTIMATED HEIGHT</button>
+          </div>
+          <div id="heightEstStatus" class="status warn tilt-status">Enable the tilt sensor first. Enter distance and eye height, then capture BASE and TOP angles.</div>
+          <div class="tilt-note">Formula: estimated height = eye height + distance × [tan(top angle) − tan(base angle)]. This is an estimate; verify the distance, angles, and resulting height with the field method required for your work.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -496,7 +517,7 @@ function save(){
   const data={};
   ids.forEach(id=>data[id]=val(id));
   data.readings=readings; data.comments=comments; data.tiltAngleDeg=tiltAngleDeg; data.stopwatchElapsedSec=stopwatchElapsedSec; data.stopwatchRunning=stopwatchRunning;
-  data.weatherSnapshots=weatherSnapshots; data.sunSnapshots=sunSnapshots;
+  data.weatherSnapshots=weatherSnapshots; data.sunSnapshots=sunSnapshots; data.heightEstBaseAngle=heightEstBaseAngle; data.heightEstTopAngle=heightEstTopAngle; data.heightEstResult=heightEstResult;
   localStorage.setItem('method9Data',JSON.stringify(data));
 }
 function updateSaveStatus(msg='Saved'){
@@ -570,6 +591,7 @@ function load(){
     if(comments.length<ROW_COUNT) comments=comments.concat(Array(ROW_COUNT-comments.length).fill(''));
     if(d.weatherSnapshots && typeof d.weatherSnapshots==='object') weatherSnapshots=d.weatherSnapshots;
     if(d.sunSnapshots && typeof d.sunSnapshots==='object') sunSnapshots=d.sunSnapshots;
+    heightEstBaseAngle=Number.isFinite(Number(d.heightEstBaseAngle))?Number(d.heightEstBaseAngle):null; heightEstTopAngle=Number.isFinite(Number(d.heightEstTopAngle))?Number(d.heightEstTopAngle):null; heightEstResult=Number.isFinite(Number(d.heightEstResult))?Number(d.heightEstResult):null; updateHeightEstimatorLive(); if(heightEstResult!=null && $('heightEstResult')) $('heightEstResult').textContent=`${heightEstResult.toFixed(1)} ft`;
     stopwatchElapsedSec=Number(d.stopwatchElapsedSec||0); stopwatchRunning=Boolean(d.stopwatchRunning);
     if(stopwatchRunning){stopwatchStartMs=Date.now()-stopwatchElapsedSec*1000;clearInterval(stopwatchHandle);stopwatchHandle=setInterval(updateStopwatch,250);}
     updateStopwatch();
@@ -1237,7 +1259,57 @@ async function autoCaptureWeather(side){
     $('weatherStatus').className='status bad'; $('weatherStatus').textContent=`Automatic weather capture failed: ${e.code===1?'location permission denied':e.message}. You can enter conditions manually.`;
   }
 }
+let heightEstBaseAngle=null, heightEstTopAngle=null, heightEstResult=null;
 function setTiltStatus(msg,kind='warn'){const el=$('tiltStatus');if(el){el.className='status '+kind;el.textContent=msg;}}
+function setHeightEstStatus(msg,kind='warn'){const el=$('heightEstStatus');if(el){el.className='status '+kind;el.textContent=msg;}}
+function updateHeightEstimatorLive(){
+  if($('heightEstLiveAngle')) $('heightEstLiveAngle').textContent=tiltAngleDeg==null?'—°':`${tiltAngleDeg.toFixed(1)}°`;
+  if($('heightEstBaseAngle')) $('heightEstBaseAngle').textContent=heightEstBaseAngle==null?'—°':`${heightEstBaseAngle.toFixed(1)}°`;
+  if($('heightEstTopAngle')) $('heightEstTopAngle').textContent=heightEstTopAngle==null?'—°':`${heightEstTopAngle.toFixed(1)}°`;
+}
+function captureHeightBaseAngle(){
+  if(!tiltSensorActive || tiltAngleDeg==null){setHeightEstStatus('Enable the tilt sensor first and wait for a live angle.', 'warn');return;}
+  heightEstBaseAngle=Number(tiltAngleDeg); updateHeightEstimatorLive();
+  setHeightEstStatus(`BASE angle captured: ${heightEstBaseAngle.toFixed(1)}°. Now aim at the top of the emission point and tap CAPTURE TOP ANGLE.`, 'ok');
+  save();
+}
+function captureHeightTopAngle(){
+  if(!tiltSensorActive || tiltAngleDeg==null){setHeightEstStatus('Enable the tilt sensor first and wait for a live angle.', 'warn');return;}
+  heightEstTopAngle=Number(tiltAngleDeg); updateHeightEstimatorLive();
+  setHeightEstStatus(`TOP angle captured: ${heightEstTopAngle.toFixed(1)}°. Tap CALCULATE HEIGHT.`, 'ok');
+  save();
+}
+function calculateEstimatedHeight(){
+  const d=Number(val('heightEstDistance')), eye=Number(val('heightEstEye'));
+  if(!Number.isFinite(d)||d<=0||!Number.isFinite(eye)||eye<0||heightEstBaseAngle==null||heightEstTopAngle==null){
+    setHeightEstStatus('Enter a valid horizontal distance and eye height, then capture both BASE and TOP angles.', 'bad');return null;
+  }
+  if(heightEstTopAngle<=heightEstBaseAngle){
+    setHeightEstStatus('TOP angle must be greater than BASE angle for this height estimate. Re-capture the angles.', 'bad');return null;
+  }
+  const rad=x=>x*Math.PI/180;
+  const h=eye+d*(Math.tan(rad(heightEstTopAngle))-Math.tan(rad(heightEstBaseAngle)));
+  if(!Number.isFinite(h)||h<=0){setHeightEstStatus('The calculated height is not physically valid. Check distance and both angles.', 'bad');return null;}
+  heightEstResult=h;
+  $('heightEstResult').textContent=`${h.toFixed(1)} ft`;
+  setHeightEstStatus(`Estimated emission-point height: ${h.toFixed(1)} ft. Tap USE ESTIMATED HEIGHT to place it in the Method 9 form.`, 'ok');
+  save();
+  return h;
+}
+function useEstimatedHeight(){
+  const h=heightEstResult??calculateEstimatedHeight();
+  if(!Number.isFinite(h))return;
+  $('height').value=h.toFixed(1); $('tiltSourceHeight').value=h.toFixed(1);
+  const eye=Number(val('heightEstEye'));
+  const d=Number(val('heightEstDistance'));
+  if(Number.isFinite(eye)) { $('observerEyeHeight').value=eye.toFixed(1); }
+  if(Number.isFinite(d)&&d>0){ $('distStart').value=Math.round(d); $('distEnd').value=Math.round(d); }
+  if(heightEstTopAngle!=null && Number.isFinite(eye)) {
+    const rel=h-eye; $('relStart').value=rel.toFixed(1); $('relEnd').value=rel.toFixed(1);
+  }
+  save(); updateAll();
+  setHeightEstStatus(`Used ${h.toFixed(1)} ft as the emission-point height in the Method 9 form.`, 'ok');
+}
 function normalizedScreenAngle(){
   const a=Number(screen.orientation?.angle ?? window.orientation ?? 0);
   return Number.isFinite(a)?a:0;
@@ -1272,7 +1344,7 @@ async function enableTiltSensor(){
       const a=extractVerticalTilt(e);
       if(a==null)return;
       tiltAngleDeg=a;
-      $('tiltAngle').textContent=`${a.toFixed(1)}°`;
+      $('tiltAngle').textContent=`${a.toFixed(1)}°`; updateHeightEstimatorLive();
       const hd=Number(val('tiltSourceHeight'))-Number(val('observerEyeHeight')||0);
       if(Number.isFinite(hd) && hd!==0){
         $('tiltHeightDiff').textContent=`${Math.abs(hd).toFixed(1)} ft`;
@@ -1399,6 +1471,7 @@ function resetApplication(){
   weatherData=null;
   weatherSnapshots={start:null,end:null};
   sunSnapshots={start:null,end:null};
+  heightEstBaseAngle=null; heightEstTopAngle=null; heightEstResult=null;
   try{localStorage.removeItem('method9Data'); localStorage.removeItem('method9_last_autosave');}catch(e){}
   try{sessionStorage.clear();}catch(e){}
   // Reloading restores the clean initial form and clean source-layout sketch.
