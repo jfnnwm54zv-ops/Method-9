@@ -18,43 +18,51 @@ textarea{min-height:70px}button{border:0;border-radius:9px;padding:11px 14px;mar
 .reading{background:#eef6fc;border:1px solid #bed2e4;border-radius:10px;padding:12px;margin-top:12px;position:sticky;top:6px;z-index:20;box-shadow:0 2px 8px rgba(0,0,0,.08)}.reading input{font-size:24px;text-align:center;font-weight:800}
 .obswrap{overflow-x:auto}.obsgrid{display:grid;grid-template-columns:repeat(4,78px);gap:4px;min-width:320px}
 .obs{border:1px solid #9aa7b3;border-radius:5px;padding:5px;text-align:center;font-size:12px;background:#fff}.obs.active{background:#fff1a8;border:3px solid #bd8500;padding:3px;font-weight:800}.obs.done{background:#dff3e4}.obs input{padding:4px;margin-top:3px;font-size:14px;text-align:center}
+.currentObs{position:sticky;top:0;z-index:30}
+.currentObsHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.currentObsTime{font-size:30px;font-weight:900;font-variant-numeric:tabular-nums;color:#123b63}
+.currentObsNumber{font-size:18px;font-weight:900;background:#fff1a8;border:2px solid #bd8500;border-radius:9px;padding:7px 10px}
+.recordBtn{font-size:18px!important;width:100%}
+.obsTime{font-weight:800;font-size:13px}
+.obsValue{font-size:20px;font-weight:900;min-height:25px;margin-top:2px}
+.obs.active .obsValue{font-size:22px}
+
 .small{font-size:12px;color:#52606d}.controls{display:flex;flex-wrap:wrap;align-items:center}
 .sketch{width:100%;border:1px solid #ccd5dd;border-radius:8px;background:#fff}
 @media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}@media print{header,.no-print{display:none!important}.card{box-shadow:none;break-inside:avoid}.reading{position:static;box-shadow:none}}
 
 #printSheet{display:none}
 @media print{
- @page{size:letter landscape;margin:.12in}
- html,body{background:#fff!important}
- body>*:not(#printSheet){display:none!important}
- #printSheet{display:block!important;width:10.76in;margin:0 auto;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:6.7px}
- .p-page{width:10.76in;height:8.20in;position:relative;break-after:page;overflow:hidden}
- .p-page:last-child{break-after:auto}
- .p-head{display:grid;grid-template-columns:3.05fr 2.95fr 4fr;gap:2px;height:34px;margin-bottom:2px}
- .p-title,.p-method,.p-meta{border:1px solid #111;padding:2px 3px}
- .p-title{text-align:center;font-size:9px;line-height:1;padding-top:5px}
- .p-title strong{font-size:10px}
- .p-method,.p-meta{line-height:1.15}
- .p-columns{display:grid;grid-template-columns:49.5% 50.5%;gap:2px;align-items:start}
- .p-box{border:1px solid #111;margin-bottom:2px;padding:2px 3px;line-height:1.05}
- .p-row{display:flex;gap:2px}.p-row>*{flex:1;min-width:0}
- .p-company{height:57px}.p-company>div{min-height:12px;border-bottom:1px solid #777}.p-company>div:last-child{border-bottom:0}
- .p-process{height:49px}.p-point{height:49px}.p-measure{height:102px}.p-emission{height:57px}.p-plume{height:91px}
- .p-sketch{height:214px;padding:2px 3px}
- .p-sketch-title{display:flex;justify-content:space-between;align-items:center;height:18px;font-size:7px}
- .p-sketch svg{width:100%;height:177px;display:block}
- .p-additional{height:48px}
- .p-fill{min-height:15px;border-top:1px solid #777;margin-top:2px;padding:2px;white-space:pre-wrap}
- .p-observation-head{border:1px solid #111;margin-bottom:2px;padding:2px 3px;height:39px}
- .p-obs-table{width:100%;border-collapse:collapse;table-layout:fixed}
- .p-obs-table th,.p-obs-table td{border:1px solid #111;text-align:center;height:19px;padding:0;font-size:7px}
- .p-obs-table th:nth-child(1){width:8%}
- .p-obs-table th:nth-child(2),.p-obs-table th:nth-child(3),.p-obs-table th:nth-child(4),.p-obs-table th:nth-child(5){width:10%}
- .p-obs-table th:nth-child(6){width:52%;text-align:left}.p-obs-table td:nth-child(6){text-align:left}
- .p-sign{border:1px solid #111;margin-top:2px;padding:2px 3px;line-height:1.55;height:61px}
- .p-footer{font-size:7px;margin-top:1px}
-}
-</style>
+  @page{size:letter landscape;margin:.10in}
+  html,body{background:#fff!important}
+  body>*:not(#printSheet){display:none!important}
+  #printSheet{display:block!important;width:10.8in;height:8.3in;margin:0 auto;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:7px}
+  .p-page{width:10.8in;height:8.25in;position:relative;break-after:page;overflow:hidden}
+  .p-page:last-child{break-after:auto}
+  .p-head{display:grid;grid-template-columns:2.65fr 2.55fr 4.8fr;gap:0;height:32px;margin-bottom:2px}
+  .p-title,.p-method,.p-meta{border:1px solid #111;padding:2px 3px}
+  .p-title{text-align:center;font-size:8px;line-height:1;padding-top:4px}
+  .p-title strong{font-size:9px}
+  .p-method,.p-meta{line-height:1.12}
+  .p-columns{display:grid;grid-template-columns:47.2% 52.8%;gap:2px;align-items:start}
+  .p-box{border:1px solid #111;margin-bottom:2px;padding:2px 3px;line-height:1.02}
+  .p-row{display:flex;gap:2px}.p-row>*{flex:1;min-width:0}
+  .p-company{height:54px}.p-company>div{min-height:11px;border-bottom:1px solid #777}.p-company>div:last-child{border-bottom:0}
+  .p-process{height:44px}.p-point{height:43px}.p-measure{height:91px}.p-emission{height:50px}.p-plume{height:82px}
+  .p-sketch{height:150px;padding:2px 3px}
+  .p-sketch-title{display:flex;justify-content:space-between;align-items:center;height:15px;font-size:7px}
+  .p-sketch svg{width:100%;height:123px;display:block}
+  .p-additional{height:36px}
+  .p-fill{min-height:11px;border-top:1px solid #777;margin-top:1px;padding:1px;white-space:pre-wrap}
+  .p-observation-head{border:1px solid #111;margin-bottom:2px;padding:2px 3px;height:34px}
+  .p-obs-table{width:100%;border-collapse:collapse;table-layout:fixed}
+  .p-obs-table th,.p-obs-table td{border:1px solid #111;text-align:center;height:18px;padding:0;font-size:7px}
+  .p-obs-table th:nth-child(1){width:7%}
+  .p-obs-table th:nth-child(2),.p-obs-table th:nth-child(3),.p-obs-table th:nth-child(4),.p-obs-table th:nth-child(5){width:10%}
+  .p-obs-table th:nth-child(6){width:53%;text-align:left}.p-obs-table td:nth-child(6){text-align:left}
+  .p-sign{border:1px solid #111;margin-top:2px;padding:2px 3px;line-height:1.45;height:49px}
+  .p-footer{font-size:7px;margin-top:1px}
+}</style>
 </head>
 <body>
 <header><h1>EPA Method 9 — Visible Emissions Field App</h1><div class="sub">15-second observations • 30- or 60-minute run</div></header>
@@ -75,17 +83,25 @@ textarea{min-height:70px}button{border:0;border-radius:9px;padding:11px 14px;mar
 <label>Unit #<input id="unit"></label>
 <label>Operating Mode<input id="mode"></label>
 <label>Date<input id="date" type="date"></label>
+<label>Start Time<input id="startTime" type="time"></label>
+<label>End Time<input id="endTime" type="time"></label>
+<label>Time Zone<input id="timezone" placeholder="e.g. CST"></label>
+<label>Form Number<input id="formNumber" placeholder="5 digits"></label>
 <label>Duration<select id="duration"><option value="30">30 minutes</option><option value="60">60 minutes</option></select></label>
 </div>
 </section>
 
 <section class="card">
-<h2>2. Weather — Beginning</h2>
+<h2>2. Weather / Plume — Beginning</h2>
 <div class="grid">
+<label>Background Color<input id="backgroundStart"></label>
+<label>Sky Conditions<input id="skyStart"></label>
 <label>Temperature °F<input id="tempStart" type="number" step=".1"></label>
+<label>Wet Bulb °F<input id="wetStart" type="number" step=".1"></label>
 <label>Relative Humidity %<input id="rhStart" type="number"></label>
 <label>Wind Speed mph<input id="windStart" type="number" step=".1"></label>
 <label>Wind Direction °<input id="windDirStart" type="number"></label>
+<label>Emission Color<input id="emissionColorStart"></label>
 </div>
 <button class="blue no-print" id="weatherStart">GET GPS + WEATHER</button><span id="ws" class="small"></span>
 </section>
@@ -102,21 +118,32 @@ textarea{min-height:70px}button{border:0;border-radius:9px;padding:11px 14px;mar
 <div class="status" id="state">READY</div>
 <div class="progress"><div id="bar"></div></div>
 <p id="count" class="small">Observation 1 of 120</p>
-<div class="reading">
-<label>Current Opacity Reading (%)<input id="reading" type="number" min="0" max="100" step="5" inputmode="numeric" placeholder="0–100"></label>
-<button class="blue no-print" id="record" style="width:100%">RECORD READING & NEXT</button>
-<p class="small">Enter opacity in 5% increments. The yellow cell is the current 15-second observation.</p>
+<div class="currentObs reading">
+  <div class="currentObsHead">
+    <div>
+      <div class="small">CURRENT 15-SECOND OBSERVATION</div>
+      <div id="currentObsTime" class="currentObsTime">00:00</div>
+    </div>
+    <div id="currentObsNumber" class="currentObsNumber">OBS 1</div>
+  </div>
+  <label>Opacity Reading (%)<input id="reading" type="number" min="0" max="100" step="5" inputmode="numeric" placeholder="0–100"></label>
+  <button class="blue no-print recordBtn" id="record">RECORD READING & NEXT</button>
+  <p class="small">Enter the opacity and tap RECORD. The value is placed automatically into the yellow observation cell.</p>
 </div>
 <div class="obswrap"><div class="obsgrid" id="obsgrid"></div></div>
 </section>
 
 <section class="card">
-<h2>4. Weather — End</h2>
+<h2>4. Weather / Plume — End</h2>
 <div class="grid">
+<label>Background Color<input id="backgroundEnd"></label>
+<label>Sky Conditions<input id="skyEnd"></label>
 <label>Temperature °F<input id="tempEnd" type="number" step=".1"></label>
+<label>Wet Bulb °F<input id="wetEnd" type="number" step=".1"></label>
 <label>Relative Humidity %<input id="rhEnd" type="number"></label>
 <label>Wind Speed mph<input id="windEnd" type="number" step=".1"></label>
 <label>Wind Direction °<input id="windDirEnd" type="number"></label>
+<label>Emission Color<input id="emissionColorEnd"></label>
 </div>
 <button class="blue no-print" id="weatherEnd">GET GPS + WEATHER</button><span id="we" class="small"></span>
 </section>
@@ -127,6 +154,7 @@ textarea{min-height:70px}button{border:0;border-radius:9px;padding:11px 14px;mar
 <label>Known Height Difference ft<input id="height" type="number" step=".1"></label>
 <label>Known Horizontal Distance ft<input id="distance" type="number" step=".1"></label>
 <label>Vertical Angle °<input id="angle" type="number" step=".1"></label>
+<label>Bearing to Emission Point °<input id="bearing" type="number" min="0" max="360" step=".1"></label>
 <label>Calculated Distance ft<input id="calcDistance" readonly></label>
 <label>Calculated Height ft<input id="calcHeight" readonly></label>
 <label>GPS Bearing °<input id="bearing" readonly></label>
@@ -137,26 +165,95 @@ textarea{min-height:70px}button{border:0;border-radius:9px;padding:11px 14px;mar
 </section>
 
 <section class="card">
-<h2>6. Source Sketch</h2>
-<svg class="sketch" viewBox="0 0 700 360">
-<line x1="35" y1="305" x2="665" y2="305" stroke="#333" stroke-width="2"/>
-<rect x="285" y="150" width="130" height="155" fill="none" stroke="#333" stroke-width="3"/>
-<rect x="315" y="90" width="70" height="60" fill="none" stroke="#333" stroke-width="3"/>
-<line x1="350" y1="90" x2="350" y2="45" stroke="#333" stroke-width="5"/>
-<circle cx="150" cy="70" r="28" fill="none" stroke="#333" stroke-width="3"/>
-<line x1="150" y1="25" x2="150" y2="5" stroke="#333" stroke-width="3"/><line x1="150" y1="115" x2="150" y2="135" stroke="#333" stroke-width="3"/>
-<line x1="105" y1="70" x2="85" y2="70" stroke="#333" stroke-width="3"/><line x1="195" y1="70" x2="215" y2="70" stroke="#333" stroke-width="3"/>
-<text x="105" y="165" font-size="16">SUN / SUN CHECK</text>
-<line x1="55" y1="230" x2="145" y2="230" stroke="#0b5cab" stroke-width="4"/>
-<text x="60" y="215" font-size="15">WIND →</text>
-<line x1="185" y1="280" x2="285" y2="280" stroke="#b42318" stroke-width="3" stroke-dasharray="8 6"/>
-<text x="185" y="270" font-size="14">Observer</text><text x="420" y="270" font-size="14">Emission point</text>
+<h2>6. Source Layout Sketch</h2>
+<svg class="sketch" viewBox="0 0 700 300" aria-label="EPA VEOF1.1 source layout sketch">
+  <rect x="0" y="0" width="700" height="300" fill="#fff"/>
+
+  <!-- North arrow / TN-MN -->
+  <text x="548" y="22" font-size="12" font-weight="700">Draw North Arrow</text>
+  <rect x="548" y="29" width="13" height="13" fill="none" stroke="#111"/>
+  <text x="566" y="40" font-size="11">TN</text>
+  <rect x="600" y="29" width="13" height="13" fill="none" stroke="#111"/>
+  <text x="618" y="40" font-size="11">MN</text>
+  <circle cx="625" cy="78" r="27" fill="none" stroke="#111" stroke-width="2"/>
+  <line x1="625" y1="98" x2="625" y2="55" stroke="#111" stroke-width="3"/>
+  <polygon points="625,49 619,61 631,61" fill="#111"/>
+  <text x="621" y="84" font-size="12" font-weight="700">N</text>
+
+  <!-- Source/building at upper-left -->
+  <rect x="58" y="72" width="105" height="92" fill="none" stroke="#111" stroke-width="2"/>
+  <rect x="78" y="52" width="65" height="20" fill="none" stroke="#111" stroke-width="2"/>
+  <line x1="110" y1="52" x2="110" y2="33" stroke="#111" stroke-width="2"/>
+  <text x="78" y="181" font-size="12" font-weight="700">Source / Building</text>
+
+  <!-- Observation point X above observer -->
+  <line x1="334" y1="54" x2="346" y2="66" stroke="#111" stroke-width="3"/>
+  <line x1="346" y1="54" x2="334" y2="66" stroke="#111" stroke-width="3"/>
+  <text x="354" y="64" font-size="12" font-weight="700">Observation Point</text>
+
+  <!-- Geometry -->
+  <line x1="340" y1="66" x2="340" y2="211" stroke="#111" stroke-width="2"/>
+  <line x1="340" y1="211" x2="196" y2="255" stroke="#111" stroke-width="2"/>
+  <line x1="340" y1="211" x2="484" y2="255" stroke="#111" stroke-width="2"/>
+
+  <!-- Observer position -->
+  <circle cx="340" cy="211" r="6" fill="#111"/>
+  <text x="351" y="216" font-size="12" font-weight="700">Observer's Position</text>
+
+  <!-- 40 degree angle -->
+  <path d="M300 223 A42 42 0 0 0 380 223" fill="none" stroke="#111" stroke-width="1.7"/>
+  <text x="326" y="246" font-size="12" font-weight="700">40°</text>
+
+  <!-- Ground / Sun Location Line -->
+  <line x1="38" y1="255" x2="520" y2="255" stroke="#111" stroke-width="1.7"/>
+  <line x1="170" y1="255" x2="510" y2="255" stroke="#111" stroke-width="1.7" stroke-dasharray="7 5"/>
+  <text x="285" y="278" font-size="12" font-weight="700">Sun Location Line</text>
+
+  <!-- Sun -->
+  <circle cx="205" cy="38" r="18" fill="none" stroke="#111" stroke-width="2"/>
+  <line x1="205" y1="10" x2="205" y2="2" stroke="#111" stroke-width="2"/>
+  <line x1="205" y1="66" x2="205" y2="74" stroke="#111" stroke-width="2"/>
+  <line x1="177" y1="38" x2="169" y2="38" stroke="#111" stroke-width="2"/>
+  <line x1="233" y1="38" x2="241" y2="38" stroke="#111" stroke-width="2"/>
+  <line x1="185" y1="18" x2="179" y2="12" stroke="#111" stroke-width="2"/>
+  <line x1="225" y1="58" x2="231" y2="64" stroke="#111" stroke-width="2"/>
+  <line x1="225" y1="18" x2="231" y2="12" stroke="#111" stroke-width="2"/>
+  <line x1="185" y1="58" x2="179" y2="64" stroke="#111" stroke-width="2"/>
+  <text x="174" y="92" font-size="12" font-weight="700">Sun / Sun Check</text>
+
+  <!-- Wind -->
+  <text x="58" y="222" font-size="12" font-weight="700">Wind</text>
+  <line x1="92" y1="218" x2="145" y2="218" stroke="#111" stroke-width="2"/>
+  <polyline points="145,218 137,213 137,223" fill="none" stroke="#111" stroke-width="2"/>
+
+  <!-- Side view inset -->
+  <rect x="515" y="118" width="160" height="118" fill="none" stroke="#111" stroke-width="2"/>
+  <text x="524" y="133" font-size="12" font-weight="700">Side View</text>
+  <line x1="545" y1="210" x2="545" y2="153" stroke="#111" stroke-width="5"/>
+  <line x1="545" y1="153" x2="575" y2="153" stroke="#111" stroke-width="5"/>
+  <line x1="575" y1="153" x2="575" y2="137" stroke="#111" stroke-width="4"/>
+  <line x1="575" y1="153" x2="650" y2="153" stroke="#111" stroke-width="2"/>
+  <path d="M650 153 C662 153 668 159 674 164 C668 169 662 175 650 175" fill="none" stroke="#111" stroke-width="2"/>
+  <text x="521" y="224" font-size="10">Stack with Plume</text>
+  <circle cx="604" cy="204" r="7" fill="none" stroke="#111" stroke-width="2"/>
+  <text x="616" y="208" font-size="10">Sun</text>
+  <line x1="604" y1="194" x2="604" y2="184" stroke="#111" stroke-width="1.5"/>
+  <line x1="604" y1="214" x2="604" y2="224" stroke="#111" stroke-width="1.5"/>
+  <line x1="594" y1="204" x2="584" y2="204" stroke="#111" stroke-width="1.5"/>
+  <line x1="614" y1="204" x2="624" y2="204" stroke="#111" stroke-width="1.5"/>
+  <text x="626" y="228" font-size="10">Wind</text>
+  <line x1="642" y1="224" x2="663" y2="224" stroke="#111" stroke-width="1.5"/>
+  <polyline points="663,224 657,220 657,228" fill="none" stroke="#111" stroke-width="1.5"/>
 </svg>
-<div class="grid"><label>Sun Check / Notes<textarea id="sun"></textarea></label><label>Sketch / Wind Notes<textarea id="notes"></textarea></label></div>
+<div class="grid">
+<label>Sun Check / Notes<textarea id="sun"></textarea></label>
+<label>Additional Information / Sketch Notes<textarea id="notes"></textarea></label>
+</div>
 </section>
 
 <section class="card no-print">
 <h2>7. Save / Print</h2>
+<p class="small">Print output is formatted to the VEOF1.1 field-form layout: left-side source information and sketch, right-side 15-second observation table, comments, and certification fields.</p>
 <button class="blue" id="print">PRINT METHOD 9 FIELD SHEET</button>
 <button id="save">SAVE TEST</button>
 <button id="load">LOAD SAVED TEST</button>
@@ -167,7 +264,7 @@ textarea{min-height:70px}button{border:0;border-radius:9px;padding:11px 14px;mar
 (()=> {
 const $=id=>document.getElementById(id);
 let S={running:false,paused:false,finished:false,elapsed:0,startedAt:0,readings:[]},timer=null,audio=null;
-const formIds=["company","location","observer","point","facility","street","citystatezip","process","control","unit","mode","date","duration","tempStart","rhStart","windStart","windDirStart","tempEnd","rhEnd","windEnd","windDirEnd","height","distance","angle","sun","notes"];
+const formIds=["company","location","observer","point","facility","street","citystatezip","process","control","unit","mode","date","startTime","endTime","timezone","formNumber","duration","backgroundStart","skyStart","tempStart","wetStart","rhStart","windStart","windDirStart","emissionColorStart","backgroundEnd","skyEnd","tempEnd","wetEnd","rhEnd","windEnd","windDirEnd","emissionColorEnd","height","distance","angle","sun","notes"];
 $("date").value=new Date().toISOString().slice(0,10);
 
 function total(){return +$("duration").value*4}
@@ -197,10 +294,10 @@ function tick(){
  update();save();
 }
 $("duration").onchange=()=>{if(S.elapsed>0){alert("Select duration before starting.");return}S.readings=[];grid();update()};
-$("start").onclick=()=>{if(S.finished){alert("Press NEW TEST / RESET first.");return}audio=audio||(()=>{try{return new(window.AudioContext||window.webkitAudioContext)()}catch(e){}})();S.running=true;S.paused=false;S.startedAt=Date.now()-S.elapsed*1000;beep();clearInterval(timer);timer=setInterval(tick,100);update();save()};
+$("start").onclick=()=>{if(S.finished){alert("Press NEW TEST / RESET first.");return}if(!$("startTime").value)$("startTime").value=new Date().toTimeString().slice(0,5);audio=audio||(()=>{try{return new(window.AudioContext||window.webkitAudioContext)()}catch(e){}})();S.running=true;S.paused=false;S.startedAt=Date.now()-S.elapsed*1000;beep();clearInterval(timer);timer=setInterval(tick,100);update();save()};
 $("pause").onclick=()=>{if(!S.running)return;S.elapsed=(Date.now()-S.startedAt)/1000;S.running=false;S.paused=true;clearInterval(timer);update();save()};
-$("finish").onclick=()=>{if(confirm("Finish this Method 9 test?")){if(S.running)S.elapsed=(Date.now()-S.startedAt)/1000;S.running=false;S.finished=true;clearInterval(timer);update();save()}};
-$("record").onclick=()=>{let v=$("reading").value,i=idx();if(v===""){alert("Enter an opacity reading.");return}v=+v;if(v<0||v>100||v%5){alert("Use 0–100% in 5% increments.");return}S.readings[i]=v;let inp=$("o"+i).querySelector("input");inp.value=v;$("reading").value="";if(i+1<total())$("o"+(i+1)).scrollIntoView({behavior:"smooth",block:"nearest"});save();update()};
+$("finish").onclick=()=>{if(confirm("Finish this Method 9 test?")){if(S.running)S.elapsed=(Date.now()-S.startedAt)/1000;$("endTime").value=new Date().toTimeString().slice(0,5);S.running=false;S.finished=true;clearInterval(timer);update();save()}};
+$("record").onclick=()=>{let v=$("reading").value,i=idx();if(v===""){alert("Enter an opacity reading.");return}v=+v;if(v<0||v>100||v%5){alert("Use 0–100% in 5% increments.");return}S.readings[i]=v;$("reading").value="";save();update();if(i+1<total())$("reading").focus()};
 $("reset").onclick=()=>{if(!confirm("Start a NEW TEST? This clears the current data."))return;clearInterval(timer);S={running:false,paused:false,finished:false,elapsed:0,startedAt:0,readings:[]};formIds.forEach(x=>$(x).value="");$("date").value=new Date().toISOString().slice(0,10);localStorage.removeItem("method9_clean");grid();update()};
 $("save").onclick=()=>{save();alert("Test saved on this iPhone.")};
 $("load").onclick=()=>{try{let x=JSON.parse(localStorage.getItem("method9_clean"));if(!x)throw 0;S=x.S;formIds.forEach(id=>{if(x.form[id]!=null)$(id).value=x.form[id]});grid();update();alert("Saved test loaded.")}catch(e){alert("No saved test found.")}};
@@ -208,95 +305,113 @@ $("load").onclick=()=>{try{let x=JSON.parse(localStorage.getItem("method9_clean"
 function escapePrint(v){
  return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
-function printPage(pageNo, startMinute){
- const rows=[];
- for(let m=0;m<30;m++){
-   const minute=startMinute+m;
-   rows.push(`<tr><td>${minute+1}</td>`+[0,15,30,45].map((sec,q)=>{
-     const i=minute*4+q, v=S.readings[i];
-     return `<td>${v==null?"":escapePrint(v)}</td>`;
-   }).join("")+`<td></td></tr>`);
- }
- return `<div class="p-page">
-   <div class="p-head">
-    <div class="p-title">EPA<br><strong>VISIBLE EMISSION OBSERVATION FORM 1</strong></div>
-    <div class="p-method"><span>Method (Single One)</span><br><b>Method 9</b> &nbsp;&nbsp; 203A &nbsp;&nbsp; 203B &nbsp;&nbsp; Other: __________________</div>
-    <div class="p-meta"><div><b>Form Number</b> ____________ &nbsp; <b>Page</b> ${pageNo} &nbsp; <b>Of</b> ${+$("duration").value===60?2:1}</div><div><b>Continued on VEO Form Number</b> __________________</div></div>
-   </div>
-   <div class="p-columns">
-    <div>
-     <div class="p-box p-company">
-      <div><b>Company Name</b> ${escapePrint($("company").value)}</div>
-      <div><b>Facility Name</b> ${escapePrint($("facility").value)}</div>
-      <div><b>Street Address</b> ${escapePrint($("street").value)}</div>
-      <div class="p-row"><span><b>City</b> ${escapePrint($("citystatezip").value)}</span><span><b>State</b> ______</span><span><b>Zip</b> ________</span></div>
-     </div>
-     <div class="p-box p-process">
-      <div class="p-row"><span><b>Process</b> ${escapePrint($("process").value)}</span><span><b>Unit #</b> ${escapePrint($("unit").value)}</span><span><b>Operating Mode</b> ${escapePrint($("mode").value)}</span></div>
-      <div><b>Control Equipment</b> ${escapePrint($("control").value)}</div>
-     </div>
-     <div class="p-box p-point"><b>Describe Emission Point</b><div class="p-fill">${escapePrint($("point").value)}</div></div>
-     <div class="p-box p-measure">
-      <div class="p-row"><span><b>Height of Emis. Pt.<br>Above Ground</b><br>Start ______ End ______</span><span><b>Height of Emis. Pt. Rel. to Observer</b><br>Start ______ End ______</span></div>
-      <div class="p-row"><span><b>Distance to Emis. Pt.</b><br>Start ${escapePrint($("distance").value)} End ______</span><span><b>Direction to Emis. Pt. (Degrees)</b><br>Start ${escapePrint($("bearing").value)} End ______</span></div>
-      <div class="p-row"><span><b>Vertical Angle to Obs. Pt.</b><br>Start ${escapePrint($("angle").value)} End ______</span><span><b>Direction to Obs. Pt. (Degrees)</b><br>Start ______ End ______</span></div>
-      <div><b>Distance and Direction to Observation Point from Emission Point</b><br>Start ____________________ End ____________________</div>
-     </div>
-     <div class="p-box p-emission"><b>Describe Emissions</b><div class="p-row"><span>Start ____________</span><span>End ____________</span></div><div class="p-row"><span><b>Emission Color</b><br>Start ______ End ______</span><span><b>Water Droplet Plume</b><br>Attached □ &nbsp; Detached □ &nbsp; None □</span></div></div>
-     <div class="p-box p-plume"><b>Describe Plume Background</b><div class="p-row"><span><b>Background Color</b><br>Start ______ End ______</span><span><b>Sky Conditions</b><br>Start ______ End ______</span></div><div class="p-row"><span><b>Wind Speed</b><br>Start ${escapePrint($("windStart").value)} End ${escapePrint($("windEnd").value)}</span><span><b>Wind Direction</b><br>Start ${escapePrint($("windDirStart").value)} End ${escapePrint($("windDirEnd").value)}</span></div><div class="p-row"><span><b>Ambient Temp.</b><br>Start ${escapePrint($("tempStart").value)} End ${escapePrint($("tempEnd").value)}</span><span><b>Wet Bulb Temp.</b><br>Start ______ End ______ &nbsp; <b>RH Percent</b> ${escapePrint($("rhStart").value)} / ${escapePrint($("rhEnd").value)}</span></div></div>
-     <div class="p-box p-sketch"><div class="p-sketch-title"><b>Source Layout Sketch</b><span><b>Draw North Arrow</b> &nbsp; □ TN &nbsp; ☒ MN</span></div>
-      <svg viewBox="0 0 500 205" aria-label="VEOF1.1 Source Layout Sketch">
- <text x="374" y="13" font-size="8" font-weight="700">Draw North Arrow</text>
- <rect x="374" y="18" width="9" height="9" fill="none" stroke="#111"/><text x="386" y="26" font-size="8">TN</text>
- <rect x="411" y="18" width="9" height="9" fill="none" stroke="#111"/><text x="423" y="26" font-size="8">MN</text>
- <circle cx="441" cy="47" r="20" fill="none" stroke="#111" stroke-width="1.2"/><text x="434" y="52" font-size="15">N</text>
+function printPage(pageNo,startMinute){
+  const rows=[];
+  for(let m=0;m<30;m++){
+    const minute=startMinute+m;
+    rows.push(`<tr><td>${minute+1}</td>`+[0,15,30,45].map((sec,q)=>{
+      const i=minute*4+q,v=S.readings[i];
+      return `<td>${v==null?"":escapePrint(v)}</td>`;
+    }).join("")+`<td>${escapePrint("")}</td></tr>`);
+  }
+  return `<div class="p-page">
+    <div class="p-head">
+      <div class="p-title">EPA<br><strong>VISIBLE EMISSION OBSERVATION FORM 1</strong></div>
+      <div class="p-method">Method (Single One)<br><b>Method 9</b> &nbsp; 203A &nbsp; 203B &nbsp; Other: __________</div>
+      <div class="p-meta"><b>Form Number</b> ${escapePrint($("formNumber").value)} &nbsp; <b>Page</b> ${pageNo} &nbsp; <b>Of</b> ${+$("duration").value===60?2:1}<br><b>Continued on VEO Form Number</b> __________________</div>
+    </div>
+    <div class="p-columns">
+      <div>
+        <div class="p-box p-company">
+          <div><b>Company Name</b> ${escapePrint($("company").value)}</div>
+          <div><b>Facility Name</b> ${escapePrint($("facility").value)}</div>
+          <div><b>Street Address</b> ${escapePrint($("street").value)}</div>
+          <div class="p-row"><span><b>City</b> ${escapePrint($("citystatezip").value)}</span><span><b>State</b> ______</span><span><b>Zip</b> ________</span></div>
+        </div>
+        <div class="p-box p-process">
+          <div class="p-row"><span><b>Process Equipment</b> ${escapePrint($("process").value)}</span><span><b>Unit #</b> ${escapePrint($("unit").value)}</span><span><b>Operating Mode</b> ${escapePrint($("mode").value)}</span></div>
+          <div><b>Control Equipment</b> ${escapePrint($("control").value)}</div>
+        </div>
+        <div class="p-box p-point"><b>Describe Emission Point</b><div class="p-fill">${escapePrint($("point").value)}</div></div>
+        <div class="p-box p-measure">
+          <div class="p-row"><span><b>Height of Emis. Pt.<br>Above Ground</b><br>Start ______ End ______</span><span><b>Height of Emis. Pt. Rel. to Observer</b><br>Start ${escapePrint($("height").value)} End ______</span></div>
+          <div class="p-row"><span><b>Distance to Emis. Pt.</b><br>Start ${escapePrint($("distance").value)} End ______</span><span><b>Direction to Emis. Pt. (Degrees)</b><br>Start ${escapePrint($("bearing").value)} End ______</span></div>
+          <div class="p-row"><span><b>Vertical Angle to Obs. Pt. (Degrees)</b><br>Start ${escapePrint($("angle").value)} End ______</span><span><b>Direction to Obs. Pt. (Degrees)</b><br>Start ______ End ______</span></div>
+          <div><b>Distance and Direction to Observation Point from Emission Point</b><br>Start ____________________ End ____________________</div>
+        </div>
+        <div class="p-box p-emission"><b>Describe Emissions</b><div class="p-row"><span>Start ____________</span><span>End ____________</span></div><div class="p-row"><span><b>Emission Color</b><br>Start ${escapePrint($("emissionColorStart").value)} End ${escapePrint($("emissionColorEnd").value)}</span><span><b>Water Droplet Plume</b><br>Attached □ &nbsp; Detached □ &nbsp; None □</span></div></div>
+        <div class="p-box p-plume"><b>Describe Plume Background</b><div class="p-row"><span><b>Background Color</b><br>Start ${escapePrint($("backgroundStart").value)} End ${escapePrint($("backgroundEnd").value)}</span><span><b>Sky Conditions</b><br>Start ${escapePrint($("skyStart").value)} End ${escapePrint($("skyEnd").value)}</span></div><div class="p-row"><span><b>Wind Speed</b><br>Start ${escapePrint($("windStart").value)} End ${escapePrint($("windEnd").value)}</span><span><b>Wind Direction</b><br>Start ${escapePrint($("windDirStart").value)} End ${escapePrint($("windDirEnd").value)}</span></div><div class="p-row"><span><b>Ambient Temp.</b><br>Start ${escapePrint($("tempStart").value)} End ${escapePrint($("tempEnd").value)}</span><span><b>Wet Bulb Temp.</b><br>Start ${escapePrint($("wetStart").value)} End ${escapePrint($("wetEnd").value)} &nbsp; <b>RH Percent</b> ${escapePrint($("rhStart").value)} / ${escapePrint($("rhEnd").value)}</span></div></div>
+        <div class="p-box p-sketch">
+          <div class="p-sketch-title"><b>Source Layout Sketch</b><span><b>Draw North Arrow</b> &nbsp; □ TN &nbsp; □ MN</span></div>
+          <svg viewBox="0 0 500 170" aria-label="VEOF1.1 Source Layout Sketch">
+  <rect x="0" y="0" width="500" height="170" fill="#fff"/>
+  <text x="4" y="10" font-size="7" font-weight="700">Source Layout Sketch</text>
 
- <polygon points="65,60 112,43 132,83 82,99" fill="none" stroke="#111" stroke-width="1.4"/>
- <text x="82" y="72" font-size="10">Source</text>
+  <text x="365" y="10" font-size="6" font-weight="700">Draw North Arrow</text>
+  <rect x="365" y="14" width="5" height="5" fill="none" stroke="#111"/>
+  <text x="372" y="19" font-size="5">TN</text>
+  <rect x="390" y="14" width="5" height="5" fill="none" stroke="#111"/>
+  <text x="397" y="19" font-size="5">MN</text>
+  <circle cx="438" cy="34" r="12" fill="none" stroke="#111" stroke-width="1"/>
+  <line x1="438" y1="43" x2="438" y2="25" stroke="#111" stroke-width="1.5"/>
+  <polygon points="438,22 435,28 441,28" fill="#111"/>
+  <text x="436" y="37" font-size="6" font-weight="700">N</text>
 
- <line x1="168" y1="135" x2="168" y2="61" stroke="#111" stroke-width="1.5"/>
- <line x1="168" y1="135" x2="30" y2="177" stroke="#111" stroke-width="1.5"/>
- <line x1="168" y1="135" x2="306" y2="177" stroke="#111" stroke-width="1.5"/>
- <circle cx="168" cy="135" r="4.5" fill="#111"/><text x="179" y="139" font-size="9">Observer's Position</text>
+  <rect x="25" y="47" width="70" height="61" fill="none" stroke="#111" stroke-width="1"/>
+  <rect x="38" y="34" width="44" height="13" fill="none" stroke="#111" stroke-width="1"/>
+  <line x1="60" y1="34" x2="60" y2="22" stroke="#111" stroke-width="1"/>
+  <text x="38" y="119" font-size="6" font-weight="700">Source / Building</text>
 
- <line x1="163" y1="56" x2="173" y2="66" stroke="#111" stroke-width="2"/>
- <line x1="173" y1="56" x2="163" y2="66" stroke="#111" stroke-width="2"/>
- <text x="180" y="63" font-size="9">Observation Point</text>
+  <line x1="238" y1="35" x2="246" y2="43" stroke="#111" stroke-width="1.6"/>
+  <line x1="246" y1="35" x2="238" y2="43" stroke="#111" stroke-width="1.6"/>
+  <text x="251" y="42" font-size="6" font-weight="700">Observation Point</text>
+  <line x1="242" y1="43" x2="242" y2="126" stroke="#111" stroke-width="1"/>
+  <line x1="242" y1="126" x2="158" y2="151" stroke="#111" stroke-width="1"/>
+  <line x1="242" y1="126" x2="326" y2="151" stroke="#111" stroke-width="1"/>
+  <circle cx="242" cy="126" r="3" fill="#111"/>
+  <text x="249" y="130" font-size="6" font-weight="700">Observer's Position</text>
+  <path d="M219 133 A25 25 0 0 0 265 133" fill="none" stroke="#111" stroke-width="1"/>
+  <text x="234" y="146" font-size="6" font-weight="700">40°</text>
+  <line x1="14" y1="151" x2="345" y2="151" stroke="#111" stroke-width="1"/>
+  <line x1="115" y1="151" x2="340" y2="151" stroke="#111" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="200" y="166" font-size="6" font-weight="700">Sun Location Line</text>
 
- <path d="M145 141 A28 28 0 0 0 191 141" fill="none" stroke="#111"/>
- <text x="160" y="153" font-size="9">40°</text>
+  <circle cx="136" cy="25" r="10" fill="none" stroke="#111" stroke-width="1"/>
+  <line x1="136" y1="9" x2="136" y2="5" stroke="#111"/>
+  <line x1="136" y1="41" x2="136" y2="45" stroke="#111"/>
+  <line x1="120" y1="25" x2="116" y2="25" stroke="#111"/>
+  <line x1="152" y1="25" x2="156" y2="25" stroke="#111"/>
+  <text x="119" y="54" font-size="6" font-weight="700">Sun / Sun Check</text>
 
- <line x1="18" y1="177" x2="318" y2="177" stroke="#111" stroke-dasharray="2,2"/>
- <text x="118" y="194" font-size="9">Sun Location Line</text>
+  <text x="25" y="137" font-size="6" font-weight="700">Wind</text>
+  <line x1="44" y1="134" x2="78" y2="134" stroke="#111" stroke-width="1"/>
+  <polyline points="78,134 73,131 73,137" fill="none" stroke="#111"/>
 
- <rect x="334" y="78" width="156" height="74" fill="none" stroke="#111" stroke-width="1.2"/>
- <text x="338" y="88" font-size="8">Side View</text>
- <rect x="346" y="108" width="8" height="36" fill="none" stroke="#111"/>
- <line x1="350" y1="112" x2="350" y2="143" stroke="#111" stroke-width="2"/>
- <line x1="359" y1="116" x2="463" y2="116" stroke="#111"/>
- <line x1="359" y1="132" x2="463" y2="132" stroke="#111"/>
- <line x1="359" y1="116" x2="359" y2="132" stroke="#111"/>
- <line x1="463" y1="112" x2="463" y2="136" stroke="#111"/>
- <text x="397" y="112" font-size="8">FT</text><text x="397" y="129" font-size="8">FT</text>
- <path d="M460 120 C470 120 480 124 487 126 C480 128 470 132 460 132" fill="none" stroke="#111"/>
-
- <text x="338" y="166" font-size="8">Stack</text><text x="338" y="175" font-size="8">with Plume</text>
- <circle cx="451" cy="165" r="5" fill="none" stroke="#111"/><line x1="447" y1="165" x2="455" y2="165" stroke="#111"/><line x1="451" y1="161" x2="451" y2="169" stroke="#111"/>
- <text x="421" y="177" font-size="8">Sun</text>
- <path d="M449 186 L482 186 M482 186 l-7 -4 M482 186 l-7 4" stroke="#111" fill="none"/>
- <text x="423" y="197" font-size="8">Wind</text>
+  <rect x="352" y="72" width="142" height="78" fill="none" stroke="#111" stroke-width="1"/>
+  <text x="357" y="80" font-size="6" font-weight="700">Side View</text>
+  <line x1="376" y1="136" x2="376" y2="97" stroke="#111" stroke-width="3"/>
+  <line x1="376" y1="97" x2="394" y2="97" stroke="#111" stroke-width="3"/>
+  <line x1="394" y1="97" x2="394" y2="87" stroke="#111" stroke-width="2.5"/>
+  <line x1="394" y1="97" x2="475" y2="97" stroke="#111"/>
+  <path d="M475 97 C484 97 489 101 494 105 C489 109 484 113 475 113" fill="none" stroke="#111"/>
+  <text x="357" y="143" font-size="5.5">Stack with Plume</text>
+  <circle cx="431" cy="132" r="5" fill="none" stroke="#111"/>
+  <text x="440" y="135" font-size="5.5">Sun</text>
+  <text x="456" y="145" font-size="5.5">Wind</text>
+  <line x1="472" y1="142" x2="490" y2="142" stroke="#111"/>
+  <polyline points="490,142 486,139 486,145" fill="none" stroke="#111"/>
 </svg>
-      <div class="p-row"><span>Longitude __________________</span><span>Latitude __________________</span><span>Declination __________________</span></div>
-     </div>
-     <div class="p-box p-additional"><b>Additional Information</b><div class="p-fill">${escapePrint($("sun").value ? "Sun check: "+$("sun").value+"\n" : "")}${escapePrint($("notes").value)}</div></div>
+          <div class="p-row"><span>Longitude __________________</span><span>Latitude __________________</span><span>Declination __________________</span></div>
+        </div>
+        <div class="p-box p-additional"><b>Additional Information</b><div class="p-fill">${escapePrint($("sun").value ? "Sun check: "+$("sun").value+"\\n" : "")}${escapePrint($("notes").value)}</div></div>
+      </div>
+      <div>
+        <div class="p-observation-head"><div class="p-row"><span><b>Observation Date</b><br>${escapePrint($("date").value)}</span><span><b>Time Zone</b><br>${escapePrint($("timezone").value)}</span><span><b>Start Time</b><br>${escapePrint($("startTime").value)}</span><span><b>End Time</b><br>${escapePrint($("endTime").value)}</span></div></div>
+        <table class="p-obs-table"><thead><tr><th>Min</th><th>0</th><th>15</th><th>30</th><th>45</th><th>Comments</th></tr></thead><tbody>${rows.join("")}</tbody></table>
+        <div class="p-sign"><div><b>Observer's Name (Print)</b> ${escapePrint($("observer").value)} &nbsp; <b>Date</b> ${escapePrint($("date").value)}</div><div><b>Observer's Signature</b> ______________________________</div><div><b>Organization</b> ${escapePrint($("company").value)}</div><div><b>Certified By</b> _________________________________ &nbsp; <b>Date</b> __________</div></div>
+      </div>
     </div>
-    <div>
-     <div class="p-observation-head"><div class="p-row"><span><b>Observation Date</b><br>${escapePrint($("date").value)}</span><span><b>Time Zone</b><br>________</span><span><b>Start Time</b><br>________</span><span><b>End Time</b><br>________</span></div></div>
-     <table class="p-obs-table"><thead><tr><th>Min</th><th>0</th><th>15</th><th>30</th><th>45</th><th>Comments</th></tr></thead><tbody>${rows.join("")}</tbody></table>
-     <div class="p-sign"><div><b>Observer's Name (Print)</b> ${escapePrint($("observer").value)}</div><div><b>Observer's Signature</b> ______________________________ &nbsp; <b>Date</b> __________</div><div><b>Organization</b> ${escapePrint($("company").value)}</div><div><b>Certified By</b> _________________________________ &nbsp; <b>Date</b> __________</div></div>
-    </div>
-   </div>
-   <div class="p-footer">VEOF1.1</div>
+    <div class="p-footer">VEOF1.1</div>
   </div>`;
 }
 $("print").onclick=()=>{
