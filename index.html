@@ -15,12 +15,50 @@ textarea{min-height:70px}button{border:0;border-radius:9px;padding:11px 14px;mar
 .primary{background:#16823b;color:#fff}.blue{background:#0b5cab;color:#fff}.danger{background:#b42318;color:#fff}
 .timer{text-align:center;font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;margin:8px}.status{text-align:center;font-weight:800}
 .progress{height:10px;background:#dce3e9;border-radius:10px;overflow:hidden}.progress div{height:100%;width:0;background:#16823b}
-.reading{background:#eef6fc;border:1px solid #bed2e4;border-radius:10px;padding:12px;margin-top:12px}.reading input{font-size:24px;text-align:center;font-weight:800}
+.reading{background:#eef6fc;border:1px solid #bed2e4;border-radius:10px;padding:12px;margin-top:12px;position:sticky;top:6px;z-index:20;box-shadow:0 2px 8px rgba(0,0,0,.08)}.reading input{font-size:24px;text-align:center;font-weight:800}
 .obswrap{overflow-x:auto}.obsgrid{display:grid;grid-template-columns:repeat(4,78px);gap:4px;min-width:320px}
 .obs{border:1px solid #9aa7b3;border-radius:5px;padding:5px;text-align:center;font-size:12px;background:#fff}.obs.active{background:#fff1a8;border:3px solid #bd8500;padding:3px;font-weight:800}.obs.done{background:#dff3e4}.obs input{padding:4px;margin-top:3px;font-size:14px;text-align:center}
 .small{font-size:12px;color:#52606d}.controls{display:flex;flex-wrap:wrap;align-items:center}
 .sketch{width:100%;border:1px solid #ccd5dd;border-radius:8px;background:#fff}
-@media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}@media print{header,.no-print{display:none!important}.card{box-shadow:none;break-inside:avoid}}
+@media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}@media print{header,.no-print{display:none!important}.card{box-shadow:none;break-inside:avoid}.reading{position:static;box-shadow:none}}
+
+#printSheet{display:none}
+@media print{
+ @page{size:letter landscape;margin:.20in}
+ html,body{background:#fff!important}
+ body>*:not(#printSheet){display:none!important}
+ #printSheet{display:block!important;width:10.60in;margin:0 auto;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:7px}
+ .p-page{width:10.60in;height:7.95in;position:relative;break-after:page}
+ .p-page:last-child{break-after:auto}
+ .p-head{display:grid;grid-template-columns:2.65fr 3.15fr 4.20fr;gap:3px;align-items:stretch;margin-bottom:3px}
+ .p-title{text-align:center;font-size:12px;line-height:1.03;padding:2px 0}
+ .p-title strong{font-size:12px}
+ .p-method,.p-meta{border:1px solid #111;padding:3px;line-height:1.25}
+ .p-columns{display:grid;grid-template-columns:49.2% 50.8%;gap:3px}
+ .p-box{border:1px solid #111;margin-bottom:3px;padding:3px;line-height:1.15}
+ .p-row{display:flex;gap:3px}.p-row>*{flex:1;min-width:0}
+ .p-company>div{min-height:13px;border-bottom:1px solid #777}
+ .p-company>div:last-child{border-bottom:0}
+ .p-fill{min-height:16px;border-top:1px solid #777;margin-top:2px;padding:2px;white-space:pre-wrap}
+ .p-process{height:40px}
+ .p-point{height:44px}
+ .p-measure{height:107px}
+ .p-emission{height:57px}
+ .p-plume{height:84px}
+ .p-sketch{height:186px;padding:2px}
+ .p-sketch-title{display:flex;justify-content:space-between;font-size:7px}
+ .p-sketch svg{width:100%;height:150px}
+ .p-additional{height:40px}
+ .p-observation-head{border:1px solid #111;margin-bottom:3px;padding:3px;height:42px}
+ .p-obs-table{width:100%;border-collapse:collapse;table-layout:fixed}
+ .p-obs-table th,.p-obs-table td{border:1px solid #111;text-align:center;height:18px;padding:0;font-size:7px}
+ .p-obs-table th:nth-child(1){width:8%}
+ .p-obs-table th:nth-child(2),.p-obs-table th:nth-child(3),.p-obs-table th:nth-child(4),.p-obs-table th:nth-child(5){width:10%}
+ .p-obs-table th:nth-child(6){width:52%;text-align:left}
+ .p-obs-table td:nth-child(6){text-align:left}
+ .p-sign{border:1px solid #111;margin-top:3px;padding:3px;line-height:1.7;height:69px}
+ .p-footer{font-size:8px;margin-top:2px}
+}
 </style>
 </head>
 <body>
@@ -34,6 +72,13 @@ textarea{min-height:70px}button{border:0;border-radius:9px;padding:11px 14px;mar
 <label>Location<input id="location"></label>
 <label>Observer<input id="observer"></label>
 <label>Point of Emissions<input id="point"></label>
+<label>Facility Name<input id="facility"></label>
+<label>Street Address<input id="street"></label>
+<label>City / State / ZIP<input id="citystatezip"></label>
+<label>Process<input id="process"></label>
+<label>Control Equipment<input id="control"></label>
+<label>Unit #<input id="unit"></label>
+<label>Operating Mode<input id="mode"></label>
 <label>Date<input id="date" type="date"></label>
 <label>Duration<select id="duration"><option value="30">30 minutes</option><option value="60">60 minutes</option></select></label>
 </div>
@@ -127,7 +172,7 @@ textarea{min-height:70px}button{border:0;border-radius:9px;padding:11px 14px;mar
 (()=> {
 const $=id=>document.getElementById(id);
 let S={running:false,paused:false,finished:false,elapsed:0,startedAt:0,readings:[]},timer=null,audio=null;
-const formIds=["company","location","observer","point","date","duration","tempStart","rhStart","windStart","windDirStart","tempEnd","rhEnd","windEnd","windDirEnd","height","distance","angle","sun","notes"];
+const formIds=["company","location","observer","point","facility","street","citystatezip","process","control","unit","mode","date","duration","tempStart","rhStart","windStart","windDirStart","tempEnd","rhEnd","windEnd","windDirEnd","height","distance","angle","sun","notes"];
 $("date").value=new Date().toISOString().slice(0,10);
 
 function total(){return +$("duration").value*4}
@@ -164,7 +209,75 @@ $("record").onclick=()=>{let v=$("reading").value,i=idx();if(v===""){alert("Ente
 $("reset").onclick=()=>{if(!confirm("Start a NEW TEST? This clears the current data."))return;clearInterval(timer);S={running:false,paused:false,finished:false,elapsed:0,startedAt:0,readings:[]};formIds.forEach(x=>$(x).value="");$("date").value=new Date().toISOString().slice(0,10);localStorage.removeItem("method9_clean");grid();update()};
 $("save").onclick=()=>{save();alert("Test saved on this iPhone.")};
 $("load").onclick=()=>{try{let x=JSON.parse(localStorage.getItem("method9_clean"));if(!x)throw 0;S=x.S;formIds.forEach(id=>{if(x.form[id]!=null)$(id).value=x.form[id]});grid();update();alert("Saved test loaded.")}catch(e){alert("No saved test found.")}};
-$("print").onclick=()=>window.print();
+
+function escapePrint(v){
+ return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function printPage(pageNo, startMinute){
+ const rows=[];
+ for(let m=0;m<30;m++){
+   const minute=startMinute+m;
+   rows.push(`<tr><td>${minute+1}</td>`+[0,15,30,45].map((sec,q)=>{
+     const i=minute*4+q, v=S.readings[i];
+     return `<td>${v==null?"":escapePrint(v)}</td>`;
+   }).join("")+`<td></td></tr>`);
+ }
+ return `<div class="p-page">
+   <div class="p-head">
+    <div class="p-title">EPA<br><strong>VISIBLE EMISSION OBSERVATION FORM 1</strong></div>
+    <div class="p-method"><span>Method (Single One)</span><br><b>Method 9</b> &nbsp;&nbsp; 203A &nbsp;&nbsp; 203B &nbsp;&nbsp; Other: __________________</div>
+    <div class="p-meta"><div><b>Form Number</b> ____________ &nbsp; <b>Page</b> ${pageNo} &nbsp; <b>Of</b> ${+$("duration").value===60?2:1}</div><div><b>Continued on VEO Form Number</b> __________________</div></div>
+   </div>
+   <div class="p-columns">
+    <div>
+     <div class="p-box p-company">
+      <div><b>Company Name</b> ${escapePrint($("company").value)}</div>
+      <div><b>Facility Name</b> ${escapePrint($("facility").value)}</div>
+      <div><b>Street Address</b> ${escapePrint($("street").value)}</div>
+      <div class="p-row"><span><b>City</b> ${escapePrint($("citystatezip").value)}</span><span><b>State</b> ______</span><span><b>Zip</b> ________</span></div>
+     </div>
+     <div class="p-box p-process">
+      <div class="p-row"><span><b>Process</b> ${escapePrint($("process").value)}</span><span><b>Unit #</b> ${escapePrint($("unit").value)}</span><span><b>Operating Mode</b> ${escapePrint($("mode").value)}</span></div>
+      <div><b>Control Equipment</b> ${escapePrint($("control").value)}</div>
+     </div>
+     <div class="p-box p-point"><b>Describe Emission Point</b><div class="p-fill">${escapePrint($("point").value)}</div></div>
+     <div class="p-box p-measure">
+      <div class="p-row"><span><b>Height of Emis. Pt.<br>Above Ground</b><br>Start ______ End ______</span><span><b>Height of Emis. Pt. Rel. to Observer</b><br>Start ______ End ______</span></div>
+      <div class="p-row"><span><b>Distance to Emis. Pt.</b><br>Start ${escapePrint($("distance").value)} End ______</span><span><b>Direction to Emis. Pt. (Degrees)</b><br>Start ${escapePrint($("bearing").value)} End ______</span></div>
+      <div class="p-row"><span><b>Vertical Angle to Obs. Pt.</b><br>Start ${escapePrint($("angle").value)} End ______</span><span><b>Direction to Obs. Pt. (Degrees)</b><br>Start ______ End ______</span></div>
+      <div><b>Distance and Direction to Observation Point from Emission Point</b><br>Start ____________________ End ____________________</div>
+     </div>
+     <div class="p-box p-emission"><b>Describe Emissions</b><div class="p-row"><span>Start ____________</span><span>End ____________</span></div><div class="p-row"><span><b>Emission Color</b><br>Start ______ End ______</span><span><b>Water Droplet Plume</b><br>Attached □ &nbsp; Detached □ &nbsp; None □</span></div></div>
+     <div class="p-box p-plume"><b>Describe Plume Background</b><div class="p-row"><span><b>Background Color</b><br>Start ______ End ______</span><span><b>Sky Conditions</b><br>Start ______ End ______</span></div><div class="p-row"><span><b>Wind Speed</b><br>Start ${escapePrint($("windStart").value)} End ${escapePrint($("windEnd").value)}</span><span><b>Wind Direction</b><br>Start ${escapePrint($("windDirStart").value)} End ${escapePrint($("windDirEnd").value)}</span></div><div class="p-row"><span><b>Ambient Temp.</b><br>Start ${escapePrint($("tempStart").value)} End ${escapePrint($("tempEnd").value)}</span><span><b>Wet Bulb Temp.</b><br>Start ______ End ______ &nbsp; <b>RH Percent</b> ${escapePrint($("rhStart").value)} / ${escapePrint($("rhEnd").value)}</span></div></div>
+     <div class="p-box p-sketch"><div class="p-sketch-title"><b>Source Layout Sketch</b><span><b>Draw North Arrow</b> &nbsp; □ TN &nbsp; ☒ MN</span></div>
+      <svg viewBox="0 0 500 190">
+       <line x1="20" y1="165" x2="470" y2="165" stroke="#222" stroke-width="1"/>
+       <polygon points="70,55 135,30 165,90 90,112" fill="none" stroke="#222" stroke-width="2"/><text x="82" y="70" font-size="13">Source</text>
+       <circle cx="250" cy="62" r="8" fill="none" stroke="#222"/><text x="262" y="66" font-size="11">Observation Point</text>
+       <circle cx="250" cy="140" r="7" fill="#222"/><text x="262" y="144" font-size="11">Observer's Position</text>
+       <line x1="250" y1="70" x2="250" y2="133" stroke="#222"/><line x1="250" y1="140" x2="95" y2="165" stroke="#222"/><line x1="250" y1="140" x2="405" y2="165" stroke="#222"/>
+       <circle cx="430" cy="55" r="22" fill="none" stroke="#222"/><text x="422" y="60" font-size="16">N</text>
+       <text x="30" y="183" font-size="9">Sun Location: __________________</text><text x="190" y="183" font-size="9">Sun: __________</text><text x="330" y="183" font-size="9">Wind: __________</text>
+      </svg>
+      <div class="p-row"><span>Longitude __________________</span><span>Latitude __________________</span><span>Declination __________________</span></div>
+     </div>
+     <div class="p-box p-additional"><b>Additional Information</b><div class="p-fill">${escapePrint($("sun").value ? "Sun check: "+$("sun").value+"\n" : "")}${escapePrint($("notes").value)}</div></div>
+    </div>
+    <div>
+     <div class="p-observation-head"><div class="p-row"><span><b>Observation Date</b><br>${escapePrint($("date").value)}</span><span><b>Time Zone</b><br>________</span><span><b>Start Time</b><br>________</span><span><b>End Time</b><br>________</span></div></div>
+     <table class="p-obs-table"><thead><tr><th>Min</th><th>0</th><th>15</th><th>30</th><th>45</th><th>Comments</th></tr></thead><tbody>${rows.join("")}</tbody></table>
+     <div class="p-sign"><div><b>Observer's Name (Print)</b> ${escapePrint($("observer").value)}</div><div><b>Observer's Signature</b> ______________________________ &nbsp; <b>Date</b> __________</div><div><b>Organization</b> ${escapePrint($("company").value)}</div><div><b>Certified By</b> _________________________________ &nbsp; <b>Date</b> __________</div></div>
+    </div>
+   </div>
+   <div class="p-footer">VEOF1.1</div>
+  </div>`;
+}
+$("print").onclick=()=>{
+ const dur=+$("duration").value;
+ $("printSheet").innerHTML=printPage(1,0)+(dur===60?printPage(2,30):"");
+ window.print();
+};
+
 
 async function weather(which,statusId){
  let st=$(statusId);if(!navigator.geolocation){st.textContent=" GPS unavailable";return}st.textContent=" Getting GPS…";
@@ -184,5 +297,8 @@ $("gps").onclick=()=>navigator.geolocation?.getCurrentPosition(p=>alert(`Observe
 grid();update();
 })();
 </script>
+
+<div id="printSheet" aria-hidden="true"></div>
+
 </body>
 </html>
