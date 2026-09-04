@@ -213,11 +213,11 @@ function tick(){
  if(!S.running)return;
  let old=Math.floor(S.elapsed/15);S.elapsed=(Date.now()-S.startedAt)/1000;let now=Math.floor(S.elapsed/15);
  if(now>old)for(let i=old+1;i<=now;i++)beep();
- if(S.elapsed>=+$("duration").value*60){S.elapsed=+$("duration").value*60;S.running=false;S.finished=true;clearInterval(timer);beep();alert("Observation run complete.")}
+ if(S.elapsed>=+$('duration').value*60){S.elapsed=+$('duration').value*60;$("endTime").value=new Date().toTimeString().slice(0,5);S.running=false;S.finished=true;clearInterval(timer);beep();save();alert("Observation run complete. Finish time recorded.")}
  update();save();
 }
 $("duration").onchange=()=>{if(S.elapsed>0){alert("Select duration before starting.");return}S.readings=[];grid();update()};
-$("start").onclick=()=>{if(S.finished){alert("Press NEW TEST / RESET first.");return}if(!$("startTime").value)$("startTime").value=new Date().toTimeString().slice(0,5);audio=audio||(()=>{try{return new(window.AudioContext||window.webkitAudioContext)()}catch(e){}})();S.running=true;S.paused=false;S.startedAt=Date.now()-S.elapsed*1000;beep();clearInterval(timer);timer=setInterval(tick,100);update();save()};
+$("start").onclick=()=>{if(S.finished){alert("Press NEW TEST / RESET first.");return}if(!S.startedAt && !$("startTime").value)$("startTime").value=new Date().toTimeString().slice(0,5);audio=audio||(()=>{try{return new(window.AudioContext||window.webkitAudioContext)()}catch(e){}})();S.running=true;S.paused=false;S.startedAt=Date.now()-S.elapsed*1000;beep();clearInterval(timer);timer=setInterval(tick,100);update();save()};
 $("pause").onclick=()=>{if(!S.running)return;S.elapsed=(Date.now()-S.startedAt)/1000;S.running=false;S.paused=true;clearInterval(timer);update();save()};
 $("finish").onclick=()=>{if(confirm("Finish this Method 9 test?")){if(S.running)S.elapsed=(Date.now()-S.startedAt)/1000;$("endTime").value=new Date().toTimeString().slice(0,5);S.running=false;S.finished=true;clearInterval(timer);update();save()}};
 $("record").onclick=()=>{let v=$("reading").value,i=idx();if(v===""){alert("Enter an opacity reading.");return}v=+v;if(v<0||v>100||v%5){alert("Use 0–100% in 5% increments.");return}S.readings[i]=v;$("reading").value="";save();update();if(i+1<total())$("reading").focus()};
