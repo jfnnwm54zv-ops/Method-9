@@ -64,6 +64,36 @@ textarea{min-height:70px}button{border:0;border-radius:9px;padding:11px 14px;mar
   .p-footer{font-size:7px;margin-top:1px}
 }</style>
 <style id="exact-sketch-css">.exact-sketch-wrap{width:100%;background:#fff;overflow:hidden;border:1px solid #cfd6dc;border-radius:12px;line-height:0}.exact-sketch{display:block;width:100%;height:auto}.print-exact-sketch{display:block;width:100%;height:auto}@media print{.print-exact-sketch{width:100%;height:auto}}</style>
+
+<style id="easy-field-entry-layout">
+@media (max-width: 800px){
+  /* Compact reading dock: stays visible while the observation grid scrolls. */
+  .currentObs.reading{
+    position:fixed !important; left:10px !important; right:10px !important; bottom:10px !important;
+    top:auto !important; z-index:9999 !important; margin:0 !important;
+    padding:9px 10px !important; border-radius:15px !important;
+    box-shadow:0 8px 26px rgba(0,0,0,.28) !important; background:#eef6fc !important;
+  }
+  .currentObs.reading .currentObsHead{
+    display:flex !important; align-items:center !important; justify-content:space-between !important;
+    margin:0 0 5px !important;
+  }
+  .currentObs.reading .small{font-size:11px !important;}
+  .currentObs.reading .currentObsTime{font-size:26px !important; line-height:1 !important;}
+  .currentObs.reading .currentObsNumber{font-size:16px !important; padding:5px 10px !important;}
+  .currentObs.reading label{font-size:12px !important; margin:0 !important;}
+  .currentObs.reading input#reading{
+    display:inline-block !important; width:43% !important; min-height:44px !important;
+    margin:2px 4px 0 0 !important; padding:6px !important; font-size:22px !important;
+  }
+  .currentObs.reading #record{
+    display:inline-block !important; width:53% !important; min-height:44px !important;
+    margin:2px 0 0 !important; padding:7px 5px !important; font-size:15px !important;
+  }
+  .currentObs.reading p.small{display:none !important;}
+  .obswrap{padding-bottom:118px !important;}
+}
+</style>
 </head>
 <body>
 <header><h1>EPA Method 9 — Visible Emissions Field App</h1><div class="sub">15-second observations • 30- or 60-minute run</div></header>
@@ -207,7 +237,18 @@ function update(){
  $("state").textContent=S.finished?"FINISHED":S.running?"RUNNING":S.paused?"PAUSED":"READY";
  $("count").textContent=S.finished?"TEST FINISHED":`Observation ${i+1} of ${total()} • 15-second interval`;
  $("bar").style.width=Math.min(100,S.elapsed/limit*100)+"%";
- document.querySelectorAll(".obs").forEach((x,n)=>{x.classList.toggle("active",S.running&&!S.finished&&n===i);x.classList.toggle("done",S.readings[n]!=null)});
+
+ // Keep the current-observation panel synchronized with the timer.
+ $("currentObsNumber").textContent=`OBS ${i+1}`;
+ $("currentObsTime").textContent=String(Math.floor(i/4)).padStart(2,"0")+":"+String((i%4)*15).padStart(2,"0");
+
+ // Show recorded values in the observation grid immediately.
+ document.querySelectorAll(".obs").forEach((x,n)=>{
+   x.classList.toggle("active",!S.finished && n===i);
+   x.classList.toggle("done",S.readings[n]!=null);
+   const inp=x.querySelector("input");
+   if(inp && S.readings[n]!=null) inp.value=S.readings[n];
+ });
 }
 function tick(){
  if(!S.running)return;
@@ -220,7 +261,23 @@ $("duration").onchange=()=>{if(S.elapsed>0){alert("Select duration before starti
 $("start").onclick=()=>{if(S.finished){alert("Press NEW TEST / RESET first.");return}if(!S.startedAt && !$("startTime").value)$("startTime").value=new Date().toTimeString().slice(0,5);audio=audio||(()=>{try{return new(window.AudioContext||window.webkitAudioContext)()}catch(e){}})();S.running=true;S.paused=false;S.startedAt=Date.now()-S.elapsed*1000;beep();clearInterval(timer);timer=setInterval(tick,100);update();save()};
 $("pause").onclick=()=>{if(!S.running)return;S.elapsed=(Date.now()-S.startedAt)/1000;S.running=false;S.paused=true;clearInterval(timer);update();save()};
 $("finish").onclick=()=>{if(confirm("Finish this Method 9 test?")){if(S.running)S.elapsed=(Date.now()-S.startedAt)/1000;$("endTime").value=new Date().toTimeString().slice(0,5);S.running=false;S.finished=true;clearInterval(timer);update();save()}};
-$("record").onclick=()=>{let v=$("reading").value,i=idx();if(v===""){alert("Enter an opacity reading.");return}v=+v;if(v<0||v>100||v%5){alert("Use 0–100% in 5% increments.");return}S.readings[i]=v;$("reading").value="";save();update();if(i+1<total())$("reading").focus()};
+$("record").onclick=()=>{
+ let v=$("reading").value,i=idx();
+ if(v===""){alert("Enter an opacity reading.");return}
+ v=+v;
+ if(v<0||v>100||v%5){alert("Use 0–100% in 5% increments.");return}
+ S.readings[i]=v;
+
+ // Write the reading directly into the matching observation cell.
+ const cell=document.querySelector("#o"+i);
+ const cellInput=cell ? cell.querySelector("input") : null;
+ if(cellInput) cellInput.value=v;
+
+ $("reading").value="";
+ save();
+ update();
+ if(i+1<total())$("reading").focus();
+};
 $("reset").onclick=()=>{if(!confirm("Start a NEW TEST? This clears the current data."))return;clearInterval(timer);S={running:false,paused:false,finished:false,elapsed:0,startedAt:0,readings:[]};formIds.forEach(x=>$(x).value="");$("date").value=new Date().toISOString().slice(0,10);localStorage.removeItem("method9_clean");grid();update()};
 $("save").onclick=()=>{save();alert("Test saved on this iPhone.")};
 $("load").onclick=()=>{try{let x=JSON.parse(localStorage.getItem("method9_clean"));if(!x)throw 0;S=x.S;formIds.forEach(id=>{if(x.form[id]!=null)$(id).value=x.form[id]});grid();update();alert("Saved test loaded.")}catch(e){alert("No saved test found.")}};
